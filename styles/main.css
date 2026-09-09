@@ -163,9 +163,11 @@ html.light-mode .theme-icon-light {
   background: transparent;
   border: none;
   color: #FFFFFF;
-  font-family: inherit;
+  font-family: 'Baikal Trial Variable', 'Baikal Trial Light', sans-serif;
+  font-variation-settings: 'wght' 350, 'wdth' 65, 'ital' 0;
   font-size: 14px;
   text-transform: uppercase;
+  letter-spacing: 0.07rem;
   padding: 8px 16px;
   cursor: pointer;
   transition: background-color 150ms ease-out, color 200ms ease-out;

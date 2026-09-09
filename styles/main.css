@@ -200,9 +200,9 @@ html.light-mode .nav-item.is-active {
 }
 
 .panel-title {
-  font-family: 'Baikal Trial Light', sans-serif;
+  font-family: 'Baikal Trial Variable', 'Baikal Trial Light', sans-serif;
+  font-variation-settings: 'wght' 350, 'wdth' 65, 'ital' 0;
   font-size: 14px;
-  font-weight: 300;
   color: #FFFFFF;
   text-transform: uppercase;
   letter-spacing: 0.07rem;
@@ -270,6 +270,7 @@ html.light-mode .panel-title {
   font-family: 'Baikal Trial Variable', 'Baikal Trial Light', sans-serif;
   font-variation-settings: 'wght' 350, 'wdth' 70, 'ital' 0;
   font-size: 14px;
+  letter-spacing: 0.06em;
   color: var(--text-color);
   user-select: none;
   transition: color 200ms ease-out;

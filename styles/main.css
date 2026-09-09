@@ -375,10 +375,10 @@ html.light-mode .panel-title {
   margin-right: 8px;
   color: var(--text-color);
   opacity: 0;
-  transition: opacity 200ms ease-out, color 200ms ease-out;
+  transition: opacity 150ms ease-out, color 200ms ease-out;
 }
 
-.freq-wave.is-visible {
+.row:hover .freq-wave {
   opacity: 1;
 }
 

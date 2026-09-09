@@ -101,10 +101,7 @@ if (freqWaveItem) {
     freqWavePath.setAttribute('d', buildWavePath(cycles));
   }
 
-  freqInput.addEventListener('input', () => {
-    updateFreqWave();
-    freqWave.classList.add('is-visible');
-  });
+  freqInput.addEventListener('input', updateFreqWave);
 
   updateFreqWave();
 }

@@ -360,6 +360,7 @@ html.light-mode .panel-title {
 .value sup {
   font-size: 0.62em;
   font-weight: 400;
+  text-transform: uppercase;
   vertical-align: super;
   margin-left: 1px;
   color: var(--text-color);

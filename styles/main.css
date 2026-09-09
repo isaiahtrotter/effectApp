@@ -196,6 +196,7 @@ html.light-mode .nav-item.is-active {
   font-weight: 300;
   color: #FFFFFF;
   text-transform: uppercase;
+  letter-spacing: 0.07rem;
   margin: 0 0 32px;
   transition: color 200ms ease-out;
 }

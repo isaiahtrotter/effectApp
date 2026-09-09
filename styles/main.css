@@ -185,6 +185,7 @@ html.light-mode .theme-icon-light {
 
 .slider-card {
   width: 250px;
+  min-width: 250px;
   max-width: 350px;
   flex: 1;
   background: var(--card-bg);
@@ -203,10 +204,15 @@ html.light-mode .theme-icon-light {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+  gap: 12px;
   margin-bottom: 0;
 }
 
 .label {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   font-family: 'Baikal Trial Light', sans-serif;
   font-size: 14px;
   color: var(--text-color);
@@ -216,6 +222,7 @@ html.light-mode .theme-icon-light {
 }
 
 .value {
+  flex: 0 0 auto;
   font-family: 'Baikal Trial Light', sans-serif;
   font-size: 14px;
   color: var(--text-color);
@@ -258,6 +265,8 @@ html.light-mode .theme-icon-light {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .icon-btn {

@@ -5,6 +5,19 @@ if (themeToggle) {
   });
 }
 
+document.querySelectorAll('.control-slider').forEach((item) => {
+  const input = item.querySelector('.range-input');
+  const cssVar = item.dataset.cssVar;
+  const unit = item.dataset.unit || '';
+
+  function apply() {
+    document.documentElement.style.setProperty(cssVar, input.value + unit);
+  }
+
+  input.addEventListener('input', apply);
+  apply();
+});
+
 document.querySelectorAll('.nav-item').forEach((btn) => {
   btn.addEventListener('click', () => {
     const target = btn.dataset.target;

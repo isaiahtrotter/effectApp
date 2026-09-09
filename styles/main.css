@@ -31,6 +31,9 @@
   --thumb-h: 10px;
 
   --anim-ms: 65;
+
+  --control-font-size: 14px;
+  --control-letter-spacing: 0.2px;
 }
 
 html.light-mode {
@@ -79,6 +82,8 @@ body {
 .sidebar {
   width: 260px;
   flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
   background: var(--card-bg);
   border-radius: 16px;
   padding: 20px 16px;
@@ -161,6 +166,24 @@ html.light-mode .theme-icon-light {
   background: rgba(255, 255, 255, 0.1);
 }
 
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 20px;
+}
+
+.control-group-label {
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  padding: 0 8px 12px;
+  transition: color 200ms ease-out;
+}
+
+.control-slider-list {
+  padding: 0 8px;
+}
+
 .content {
   flex: 1;
   padding: 48px;
@@ -215,9 +238,9 @@ html.light-mode .theme-icon-light {
   white-space: nowrap;
   text-overflow: ellipsis;
   font-family: 'Baikal Trial Light', sans-serif;
-  font-size: 14px;
+  font-size: var(--control-font-size);
   color: var(--text-color);
-  letter-spacing: 0.2px;
+  letter-spacing: var(--control-letter-spacing);
   user-select: none;
   transition: color 200ms ease-out;
 }
@@ -225,8 +248,9 @@ html.light-mode .theme-icon-light {
 .value {
   flex: 0 0 auto;
   font-family: 'Baikal Trial Light', sans-serif;
-  font-size: 14px;
+  font-size: var(--control-font-size);
   color: var(--text-color);
+  letter-spacing: var(--control-letter-spacing);
   font-variant-numeric: tabular-nums;
   transition: color 200ms ease-out;
 }

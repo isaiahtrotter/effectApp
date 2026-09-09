@@ -33,6 +33,17 @@
   --anim-ms: 65;
 }
 
+html.light-mode {
+  --bg: #EFEFF1;
+  --sidebar-bg: #E4E4E7;
+  --border: #D3D3D6;
+  --text-color: #2E2E2F;
+  --text-dim: #77777A;
+  --handle-color: #121213;
+  --gray-near: #CDCECF;
+  --gray-far:  #DCDDDF;
+}
+
 .track-wrap.hovered {
   --gray-h: 4px;
   --grad-h: 12px;
@@ -46,11 +57,13 @@ html, body {
   padding: 0;
   background: var(--bg);
   height: 100%;
+  transition: background-color 200ms ease-out;
 }
 
 body {
   font-family: 'Baikal Trial Light', sans-serif;
   color: var(--text-color);
+  transition: color 200ms ease-out;
 }
 
 /* ---------- layout ---------- */
@@ -66,27 +79,60 @@ body {
   background: var(--sidebar-bg);
   border-right: 1px solid var(--border);
   padding: 20px 16px;
+  transition: background-color 200ms ease-out, border-color 200ms ease-out;
 }
 
 .sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   font-size: 13px;
   letter-spacing: 0.4px;
   color: var(--text-dim);
   text-transform: uppercase;
   margin-bottom: 16px;
   padding: 0 8px;
+  transition: color 200ms ease-out;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color 200ms ease-out, background-color 150ms ease-out;
+}
+
+.theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-color);
+}
+
+html.light-mode .theme-toggle:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.theme-icon-light {
+  display: none;
+}
+
+html.light-mode .theme-icon-dark {
+  display: none;
+}
+
+html.light-mode .theme-icon-light {
+  display: block;
 }
 
 .nav-group + .nav-group {
   margin-top: 20px;
-}
-
-.nav-group-label {
-  font-size: 11px;
-  letter-spacing: 0.4px;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  padding: 0 8px 6px;
 }
 
 .nav-item {

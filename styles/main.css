@@ -80,6 +80,7 @@ html, body {
 body {
   font-family: 'Baikal Trial Light', sans-serif;
   color: var(--text-color);
+  user-select: none;
   transition: color 200ms ease-out;
 }
 
@@ -118,6 +119,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-top: 20px;
+}
+
+.switch-row + .slider-item {
   margin-top: 20px;
 }
 
@@ -368,6 +373,7 @@ html.light-mode .panel-title {
   font-weight: 300;
   font-size: 14px;
   letter-spacing: 1px;
+  user-select: text;
   color: inherit;
   font-variant-numeric: inherit;
   background: transparent;

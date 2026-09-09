@@ -49,6 +49,14 @@ if (animSpeedItem) {
   });
 }
 
+const elasticityStrengthItem = document.querySelector('[data-elasticity-strength]');
+if (elasticityStrengthItem) {
+  const strengthInput = elasticityStrengthItem.querySelector('.range-input');
+  strengthInput.addEventListener('input', () => {
+    if (window.sliderElasticity) window.sliderElasticity.setStrength(Number(strengthInput.value));
+  });
+}
+
 const elasticityToggle = document.querySelector('[data-elasticity-toggle]');
 if (elasticityToggle) {
   elasticityToggle.addEventListener('click', () => {
@@ -56,6 +64,7 @@ if (elasticityToggle) {
     elasticityToggle.classList.toggle('is-on', isOn);
     elasticityToggle.setAttribute('aria-checked', String(isOn));
     if (window.sliderElasticity) window.sliderElasticity.setEnabled(isOn);
+    if (elasticityStrengthItem) elasticityStrengthItem.hidden = !isOn;
   });
 }
 

@@ -1,9 +1,13 @@
-// Shared across every slider instance so a single toggle can turn the
-// rubber-band overshoot effect on/off for all of them at once.
+// Shared across every slider instance so a single toggle/slider can
+// control the rubber-band overshoot effect for all of them at once.
 let elasticityEnabled = true;
+let elasticityStrength = 10;
 window.sliderElasticity = {
   setEnabled(enabled) {
     elasticityEnabled = enabled;
+  },
+  setStrength(strength) {
+    elasticityStrength = strength;
   },
 };
 
@@ -101,11 +105,10 @@ function setupSlider(item) {
   let lastPull = 0;
   let lastDir = 0;
 
-  const MAX_PULL = 10;
-
   function rubberBand(overshootPx) {
     const c = 0.55;
-    return MAX_PULL * (1 - 1 / ((overshootPx * c) / MAX_PULL + 1));
+    const maxPull = elasticityStrength;
+    return maxPull * (1 - 1 / ((overshootPx * c) / maxPull + 1));
   }
 
   let releaseTimer = null;

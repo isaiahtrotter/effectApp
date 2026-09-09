@@ -283,23 +283,34 @@ html.light-mode .panel-title {
 
 .resize-handle {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 3px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 100px;
   cursor: ew-resize;
-  background: var(--handle-color);
-  opacity: 0;
-  transition: opacity 150ms ease-out;
   z-index: 5;
 }
 
-.resize-handle:hover,
-.resize-handle.is-dragging {
+.resize-handle::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 3px;
+  width: 3px;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--handle-color);
+  opacity: 0;
+  transition: opacity 150ms ease-out;
+}
+
+.resize-handle:hover::after,
+.resize-handle.is-dragging::after {
   opacity: 0.35;
 }
 
 .resize-handle-right {
-  right: -3px;
+  right: -12px;
 }
 
 .slider-item + .slider-item {

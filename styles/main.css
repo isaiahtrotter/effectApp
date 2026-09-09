@@ -33,7 +33,7 @@
   --anim-ms: 65;
 
   --control-font-size: 14px;
-  --control-letter-spacing: 0.2px;
+  --control-letter-spacing: 1px;
 }
 
 html.light-mode {
@@ -202,6 +202,8 @@ html.light-mode .theme-icon-light {
   font-family: 'Baikal Trial Light', sans-serif;
   font-size: 14px;
   font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.07rem;
   margin: 0 0 32px;
 }
 
@@ -268,7 +270,7 @@ html.light-mode .theme-icon-light {
 
 .value-num {
   font-family: 'CommitMono', 'ui-monospace', 'Menlo', 'Consolas', monospace;
-  font-size: inherit;
+  font-size: 15px;
   color: inherit;
   font-variant-numeric: inherit;
   background: transparent;

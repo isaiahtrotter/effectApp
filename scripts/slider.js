@@ -227,6 +227,15 @@ function setupSlider(item) {
 
   input.addEventListener('input', update);
   update();
+
+  // The gradient's background-size is pinned to the track's pixel width
+  // at the moment it's drawn, so it must be recomputed whenever the
+  // track itself resizes (e.g. dragging the slider card's resize handle
+  // or the window resizing) — otherwise it stays pinned to its original
+  // width instead of stretching along with the rest of the slider.
+  if (gradBefore && gradAfter) {
+    new ResizeObserver(() => updateGradientGeometry(currentPct)).observe(wrap);
+  }
 }
 
 document.querySelectorAll('.slider-item').forEach(setupSlider);

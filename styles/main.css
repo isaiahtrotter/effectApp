@@ -176,7 +176,8 @@ html.light-mode .theme-icon-light {
 }
 
 .panel-title {
-  font-size: 20px;
+  font-family: 'Baikal Trial Light', sans-serif;
+  font-size: 14px;
   font-weight: 300;
   margin: 0 0 32px;
 }

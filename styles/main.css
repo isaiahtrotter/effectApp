@@ -271,6 +271,7 @@ html.light-mode .theme-icon-light {
 .value-num {
   font-family: 'CommitMono', 'ui-monospace', 'Menlo', 'Consolas', monospace;
   font-size: 15px;
+  letter-spacing: 1px;
   color: inherit;
   font-variant-numeric: inherit;
   background: transparent;

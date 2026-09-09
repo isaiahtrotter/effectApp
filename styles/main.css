@@ -1,0 +1,363 @@
+@font-face {
+  font-family: 'Baikal Trial Light';
+  src: url('../fonts/BaikalTrial-Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CommitMono';
+  src: url('../fonts/commit-mono-latin-400-normal.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --bg: #171716;
+  --sidebar-bg: #131312;
+  --border: #2A2A2A;
+  --text-color: #D4D4D5;
+  --text-dim: #8A8A8C;
+  --handle-color: #F5F5F7;
+
+  --gray-near: #525253;
+  --gray-far:  #353536;
+
+  --gray-h: 2px;
+  --grad-h: 0px;
+  --thumb-w: 2px;
+  --thumb-h: 10px;
+
+  --anim-ms: 65;
+}
+
+.track-wrap.hovered {
+  --gray-h: 4px;
+  --grad-h: 12px;
+  --thumb-h: 16px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  height: 100%;
+}
+
+body {
+  font-family: 'Baikal Trial Light', sans-serif;
+  color: var(--text-color);
+}
+
+/* ---------- layout ---------- */
+
+.app {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 260px;
+  flex: 0 0 auto;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--border);
+  padding: 20px 16px;
+}
+
+.sidebar-header {
+  font-size: 13px;
+  letter-spacing: 0.4px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  padding: 0 8px;
+}
+
+.nav-group + .nav-group {
+  margin-top: 20px;
+}
+
+.nav-group-label {
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  padding: 0 8px 6px;
+}
+
+.nav-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--text-color);
+  font-family: inherit;
+  font-size: 14px;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 150ms ease-out;
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.nav-item.is-active {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.content {
+  flex: 1;
+  padding: 48px;
+  display: flex;
+  justify-content: center;
+}
+
+.panel {
+  width: 100%;
+  max-width: 420px;
+}
+
+.panel-title {
+  font-size: 20px;
+  font-weight: 300;
+  margin: 0 0 32px;
+}
+
+/* ---------- slider component ---------- */
+
+.slider-card {
+  width: 100%;
+  padding: 0;
+}
+
+.slider-item + .slider-item {
+  margin-top: 32px;
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0;
+}
+
+.label {
+  font-family: 'Baikal Trial Light', sans-serif;
+  font-size: 14px;
+  color: var(--text-color);
+  letter-spacing: 0.2px;
+  user-select: none;
+  transition: color 200ms ease-out;
+}
+
+.value {
+  font-family: 'Baikal Trial Light', sans-serif;
+  font-size: 14px;
+  color: var(--text-color);
+  font-variant-numeric: tabular-nums;
+  transition: color 200ms ease-out;
+}
+
+.value sup {
+  font-size: 0.62em;
+  font-weight: 400;
+  vertical-align: super;
+  margin-left: 1px;
+  color: var(--text-color);
+  opacity: 0.9;
+  user-select: none;
+  transition: color 200ms ease-out;
+}
+
+.value-num {
+  font-family: 'CommitMono', 'ui-monospace', 'Menlo', 'Consolas', monospace;
+  font-size: inherit;
+  color: inherit;
+  font-variant-numeric: inherit;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+  margin: 0;
+  text-align: right;
+  cursor: text;
+  transition: color 200ms ease-out;
+}
+
+.value-num::selection {
+  background: var(--text-color);
+  color: var(--bg);
+}
+
+.label-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 150ms ease-out, color 200ms ease-out;
+}
+
+.row:hover .icon-btn {
+  opacity: 1;
+}
+
+.icon-btn .icon-hover {
+  display: none;
+}
+
+.icon-btn.icon-active .icon-default {
+  display: none;
+}
+
+.icon-btn.icon-active .icon-hover {
+  display: block;
+}
+
+/* ---------- track / thumb ---------- */
+
+.track-wrap {
+  position: relative;
+  height: 32px;
+  display: flex;
+  align-items: flex-end;
+  cursor: pointer;
+}
+
+.gray-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--gray-h);
+  display: flex;
+  z-index: 1;
+  pointer-events: none;
+  transition: height calc(var(--anim-ms) * 1ms) linear;
+}
+
+.gray-fill {
+  height: 100%;
+  flex: 0 0 auto;
+  transition: background-color 200ms ease-out;
+}
+
+.gray-fill.before {
+  background: var(--gray-near);
+}
+
+.gray-fill.after {
+  background: var(--gray-far);
+}
+
+.gradient-seg {
+  position: absolute;
+  bottom: var(--gray-h);
+  height: var(--grad-h);
+  overflow: hidden;
+  z-index: 2;
+  pointer-events: none;
+  transition:
+    height calc(var(--anim-ms) * 1ms) linear,
+    bottom calc(var(--anim-ms) * 1ms) linear;
+  background-image: linear-gradient(
+    to right,
+    #DD4D37 0%,
+    #FFD753 14%,
+    #FFFFFF 30%,
+    #53A1CE 72%,
+    #0863E3 100%
+  );
+  background-repeat: no-repeat;
+}
+
+.gradient-seg.before {
+  left: 0;
+  opacity: 1;
+}
+
+.gradient-seg.after {
+  opacity: 0.4;
+}
+
+.gradient-seg.mono {
+  background-image: linear-gradient(
+    to right,
+    #3A3A3C 0%,
+    #FFFFFF 100%
+  );
+}
+
+.thumb {
+  position: absolute;
+  bottom: 0;
+  left: 0%;
+  width: var(--thumb-w);
+  height: var(--thumb-h);
+  background: var(--handle-color);
+  border-radius: 0;
+  transform: translateX(-50%);
+  pointer-events: none;
+  transition: width calc(var(--anim-ms) * 1ms) linear, height calc(var(--anim-ms) * 1ms) linear, background-color 200ms ease-out;
+  z-index: 3;
+}
+
+.range-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  z-index: 4;
+}
+
+.range-input::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+}
+
+.range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 1px;
+  height: 100%;
+  background: transparent;
+}
+
+.range-input::-moz-range-track {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+}
+
+.range-input::-moz-range-thumb {
+  width: 1px;
+  height: 100%;
+  background: transparent;
+  border: none;
+}

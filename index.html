@@ -11,7 +11,7 @@
   <div class="app">
     <aside class="sidebar">
       <div class="sidebar-header">
-        <span>Components</span>
+        <h1 class="panel-title sidebar-title">Components</h1>
         <button class="theme-toggle" type="button" aria-label="Toggle light/dark theme">
           <svg class="theme-icon theme-icon-dark" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M14 8.5C13.4 11.5 10.7 13.75 7.5 13.75C3.91 13.75 1 10.84 1 7.25C1 4.05 3.25 1.35 6.25 0.75C5.47 1.83 5 3.16 5 4.6C5 8.19 7.91 11.1 11.5 11.1C12.4 11.1 13.24 10.92 14 10.6C14 9.9 13.98 9.2 14 8.5Z" fill="currentColor"/>
@@ -27,62 +27,6 @@
           <button class="nav-item is-active" data-target="sliders">Sliders</button>
         </div>
       </nav>
-
-      <div class="sidebar-footer">
-        <div class="control-group-label">Display</div>
-
-        <div class="control-slider-list">
-          <div class="slider-item control-slider" data-min="10" data-max="20" data-value="14" data-decimals="0" data-css-var="--control-font-size" data-unit="px">
-            <div class="row">
-              <span class="label-group">
-                <span class="label">Text Size</span>
-              </span>
-              <span class="value"><input class="value-num" type="text" inputmode="numeric" value="14" size="2" maxlength="2" /><sup>px</sup></span>
-            </div>
-
-            <div class="track-wrap">
-              <div class="gray-bar">
-                <div class="gray-fill before"></div>
-                <div class="gray-fill after"></div>
-              </div>
-              <div class="thumb"></div>
-              <input
-                class="range-input"
-                type="range"
-                min="10"
-                max="20"
-                step="1"
-                value="14"
-              />
-            </div>
-          </div>
-
-          <div class="slider-item control-slider" data-min="-0.5" data-max="2" data-value="1" data-decimals="1" data-css-var="--control-letter-spacing" data-unit="px">
-            <div class="row">
-              <span class="label-group">
-                <span class="label">Letter Spacing</span>
-              </span>
-              <span class="value"><input class="value-num" type="text" inputmode="decimal" value="1.0" size="4" maxlength="4" /><sup>px</sup></span>
-            </div>
-
-            <div class="track-wrap">
-              <div class="gray-bar">
-                <div class="gray-fill before"></div>
-                <div class="gray-fill after"></div>
-              </div>
-              <div class="thumb"></div>
-              <input
-                class="range-input"
-                type="range"
-                min="-0.5"
-                max="2"
-                step="0.1"
-                value="1"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
     </aside>
 
     <main class="content">

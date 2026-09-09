@@ -5,19 +5,6 @@ if (themeToggle) {
   });
 }
 
-document.querySelectorAll('.control-slider').forEach((item) => {
-  const input = item.querySelector('.range-input');
-  const cssVar = item.dataset.cssVar;
-  const unit = item.dataset.unit || '';
-
-  function apply() {
-    document.documentElement.style.setProperty(cssVar, input.value + unit);
-  }
-
-  input.addEventListener('input', apply);
-  apply();
-});
-
 const sliderCard = document.querySelector('.slider-card');
 
 function setupCardResize(handle, sign) {

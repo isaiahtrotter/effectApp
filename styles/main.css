@@ -373,12 +373,12 @@ html.light-mode .panel-title {
   display: inline-block;
   vertical-align: middle;
   margin-right: 8px;
-  color: var(--text-color);
+  color: var(--gray-near);
   opacity: 0;
   transition: opacity 150ms ease-out, color 200ms ease-out;
 }
 
-.row:hover .freq-wave {
+.slider-item:hover .freq-wave {
   opacity: 1;
 }
 

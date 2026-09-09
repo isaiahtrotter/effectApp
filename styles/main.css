@@ -188,6 +188,7 @@ html.light-mode .nav-item.is-active {
   font-family: 'Baikal Trial Light', sans-serif;
   font-size: 14px;
   font-weight: 300;
+  color: #000000;
   text-transform: uppercase;
   letter-spacing: 0.07rem;
   margin: 0 0 32px;
@@ -249,7 +250,7 @@ html.light-mode .nav-item.is-active {
   font-family: 'Baikal Trial Light', sans-serif;
   font-size: 14px;
   color: var(--text-color);
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   user-select: none;
   transition: color 200ms ease-out;
 }

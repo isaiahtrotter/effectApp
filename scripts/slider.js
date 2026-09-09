@@ -1,7 +1,7 @@
 // Shared across every slider instance so a single toggle/slider can
 // control the rubber-band overshoot effect for all of them at once.
 let elasticityEnabled = true;
-let elasticityStrength = 10;
+let elasticityStrength = 6;
 window.sliderElasticity = {
   setEnabled(enabled) {
     elasticityEnabled = enabled;

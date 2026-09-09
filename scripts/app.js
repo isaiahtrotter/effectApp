@@ -71,8 +71,10 @@ if (elasticityToggle) {
 const freqWaveItem = document.querySelector('[data-freq-wave]');
 if (freqWaveItem) {
   const freqInput = freqWaveItem.querySelector('.range-input');
+  const freqValueInput = freqWaveItem.querySelector('.value-num');
   const freqWave = freqWaveItem.querySelector('.freq-wave');
   const freqWavePath = freqWave.querySelector('path');
+  const FREQ_WAVE_BASE_WIDTH = 28;
 
   const WAVE_WIDTH = 32;
   const WAVE_HEIGHT = 16;
@@ -99,6 +101,13 @@ if (freqWaveItem) {
     const t = (val - min) / (max - min);
     const cycles = MIN_CYCLES + t * (MAX_CYCLES - MIN_CYCLES);
     freqWavePath.setAttribute('d', buildWavePath(cycles));
+
+    // The value input shrinks to fit its digit count (see slider.js), which
+    // would otherwise leave a growing gap between the wave and the number.
+    // Grow the wave rightward by exactly the freed-up character width so
+    // the two together keep occupying the same total space.
+    const extraChars = Math.max(0, freqValueInput.maxLength - freqValueInput.value.length);
+    freqWave.style.width = `calc(${FREQ_WAVE_BASE_WIDTH}px + ${extraChars}ch)`;
   }
 
   freqInput.addEventListener('input', updateFreqWave);

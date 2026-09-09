@@ -381,7 +381,7 @@ html.light-mode .panel-title {
   font-size: 14px;
   color: var(--gray-near);
   opacity: 0;
-  transition: opacity 150ms ease-out, color 200ms ease-out, width 150ms ease-out;
+  transition: opacity 150ms ease-out, color 200ms ease-out;
 }
 
 .slider-item:hover .freq-wave {

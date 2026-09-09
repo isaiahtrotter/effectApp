@@ -102,12 +102,17 @@ if (freqWaveItem) {
     const cycles = MIN_CYCLES + t * (MAX_CYCLES - MIN_CYCLES);
     freqWavePath.setAttribute('d', buildWavePath(cycles));
 
-    // The value input shrinks to fit its digit count (see slider.js), which
-    // would otherwise leave a growing gap between the wave and the number.
-    // Grow the wave rightward by exactly the freed-up character width so
-    // the two together keep occupying the same total space.
-    const extraChars = Math.max(0, freqValueInput.maxLength - freqValueInput.value.length);
-    freqWave.style.width = `calc(${FREQ_WAVE_BASE_WIDTH}px + ${extraChars}ch)`;
+    // The native `size` attribute's width formula is UA-specific and can't
+    // be mirrored exactly in CSS, which left a tiny residual drift in the
+    // wave's left edge. Instead, size the value input itself with an
+    // explicit CSS width using the same ch-based unit as the wave's
+    // compensation below, so the two always sum to one fixed total width
+    // and the wave's left edge truly never moves.
+    const len = freqValueInput.value.length;
+    const maxLen = freqValueInput.maxLength;
+    const charWidth = (n) => `${n}ch + ${n}px`; // +1px per char to cover letter-spacing
+    freqValueInput.style.width = `calc(${charWidth(len)})`;
+    freqWave.style.width = `calc(${FREQ_WAVE_BASE_WIDTH}px + ${charWidth(maxLen - len)})`;
   }
 
   freqInput.addEventListener('input', updateFreqWave);

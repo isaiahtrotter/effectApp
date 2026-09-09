@@ -397,7 +397,7 @@ html.light-mode .panel-title {
   margin: 0;
   text-align: right;
   cursor: text;
-  transition: color 200ms ease-out;
+  transition: color 200ms ease-out, width 100ms ease-out;
 }
 
 .value-num::selection {

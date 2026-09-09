@@ -64,7 +64,7 @@ function setupSlider(item) {
     after.style.flexBasis  = (100 - currentPct) + '%';
     thumb.style.left = currentPct + '%';
     valueEl.value = val.toFixed(decimals);
-    valueEl.size = valueEl.value.length;
+    valueEl.style.width = valueEl.value.length + 'ch';
 
     updateGradientGeometry(currentPct);
   }

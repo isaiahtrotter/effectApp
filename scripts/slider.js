@@ -87,7 +87,26 @@ function setupSlider(item) {
     mouseInteraction = false;
   });
   valueEl.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') valueEl.blur();
+    if (e.key === 'Enter') {
+      valueEl.blur();
+      return;
+    }
+
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+    e.preventDefault();
+
+    const min = parseFloat(input.min);
+    const max = parseFloat(input.max);
+    const rawStep = parseFloat(input.step);
+    const step = isNaN(rawStep) ? 1 : rawStep;
+    const delta = step * (e.shiftKey ? 10 : 1) * (e.key === 'ArrowUp' ? 1 : -1);
+
+    let v = parseFloat(valueEl.value);
+    if (isNaN(v)) v = parseFloat(input.value);
+    v = Math.min(max, Math.max(min, v + delta));
+    input.value = v;
+    update();
+    selectAllValue();
   });
   valueEl.addEventListener('blur', () => {
     const min = parseFloat(input.min);

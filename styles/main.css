@@ -289,7 +289,7 @@ html.light-mode .panel-title {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 6px;
+  width: 3px;
   cursor: ew-resize;
   background: var(--handle-color);
   opacity: 0;
@@ -303,8 +303,7 @@ html.light-mode .panel-title {
 }
 
 .resize-handle-right {
-  right: 0;
-  border-radius: 0 16px 16px 0;
+  right: -3px;
 }
 
 .slider-item + .slider-item {

@@ -349,8 +349,6 @@ html.light-mode .panel-title {
 }
 
 .value {
-  display: inline-flex;
-  align-items: center;
   flex: 0 0 auto;
   font-family: 'Baikal Trial Light', sans-serif;
   font-size: 14px;
@@ -360,10 +358,10 @@ html.light-mode .panel-title {
 }
 
 .value sup {
-  align-self: flex-start;
   font-size: 0.62em;
   font-weight: 400;
   text-transform: uppercase;
+  vertical-align: super;
   margin-left: 1px;
   color: var(--text-color);
   opacity: 0.9;
@@ -372,7 +370,6 @@ html.light-mode .panel-title {
 }
 
 .freq-wave {
-  flex: 0 0 auto;
   display: inline-block;
   vertical-align: middle;
   width: 28px;
@@ -389,7 +386,6 @@ html.light-mode .panel-title {
 }
 
 .value-num {
-  flex: 0 0 auto;
   font-family: 'CommitMono', 'ui-monospace', 'Menlo', 'Consolas', monospace;
   font-weight: 300;
   font-size: 14px;

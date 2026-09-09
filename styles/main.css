@@ -194,15 +194,13 @@ html.light-mode .theme-icon-light {
 
 .content {
   flex: 1;
-  padding: 48px;
   display: flex;
-  justify-content: center;
 }
 
 .panel {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   flex: 1;
 }
 

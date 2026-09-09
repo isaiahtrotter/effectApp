@@ -1,0 +1,422 @@
+/* ---------- experiments layout ---------- */
+
+.experiments-panel {
+  display: block;
+  overflow-y: auto;
+}
+
+.experiments-card {
+  width: 100%;
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 16px;
+  transition: background-color 200ms ease-out;
+}
+
+.experiments-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.exp-item {
+  position: relative;
+  background: var(--page-bg);
+  border-radius: 12px;
+  padding: 14px;
+  overflow: hidden;
+  transition: background-color 200ms ease-out;
+}
+
+.exp-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.exp-name {
+  font-family: 'Baikal Trial Variable', 'Baikal Trial Light', sans-serif;
+  font-variation-settings: 'wght' 350, 'wdth' 70, 'ital' 0;
+  font-size: 13px;
+  color: var(--text-color);
+  transition: color 200ms ease-out;
+}
+
+.exp-value {
+  font-family: 'CommitMono', 'ui-monospace', 'Menlo', 'Consolas', monospace;
+  font-weight: 300;
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: var(--text-color);
+  font-variant-numeric: tabular-nums;
+  transition: color 200ms ease-out;
+}
+
+.exp-control {
+  position: relative;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.exp-track {
+  position: relative;
+  width: 100%;
+}
+
+.exp-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: calc(var(--pct, 0) * 1%);
+}
+
+.exp-thumb {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--pct, 0) * 1%);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* shared, invisible range input: identical trick to the main slider
+   component — sits on top for interaction, visuals live underneath. */
+.exp-range {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  z-index: 4;
+}
+
+.exp-range::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+}
+
+.exp-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 1px;
+  height: 100%;
+  background: transparent;
+}
+
+.exp-range::-moz-range-track {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+}
+
+.exp-range::-moz-range-thumb {
+  width: 1px;
+  height: 100%;
+  background: transparent;
+  border: none;
+}
+
+/* ---------- 1. Neon Glow ---------- */
+
+.exp-neon .exp-control {
+  height: 14px;
+}
+
+.exp-neon .exp-track {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.exp-neon .exp-fill {
+  border-radius: 4px;
+  background: linear-gradient(90deg, #ff2bd6, #00e5ff);
+  box-shadow: 0 0 12px 2px rgba(0, 229, 255, 0.6), 0 0 20px 4px rgba(255, 43, 214, 0.35);
+}
+
+.exp-neon .exp-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 10px 3px #00e5ff, 0 0 18px 6px rgba(255, 43, 214, 0.6);
+}
+
+/* ---------- 2. Brutalist Block ---------- */
+
+.exp-brutalist .exp-track {
+  height: 20px;
+  background: var(--card-bg);
+  border: 2px solid var(--text-color);
+}
+
+.exp-brutalist .exp-fill {
+  background: var(--text-color);
+}
+
+.exp-brutalist .exp-thumb {
+  width: 10px;
+  height: 28px;
+  border-radius: 0;
+  background: #ff3b30;
+  border: 2px solid var(--page-bg);
+}
+
+.exp-brutalist .exp-name,
+.exp-brutalist .exp-value {
+  font-family: 'CommitMono', 'ui-monospace', monospace;
+  text-transform: uppercase;
+}
+
+/* ---------- 3. Vertical Fader ---------- */
+
+.exp-control-vertical {
+  height: 140px;
+  justify-content: center;
+}
+
+.exp-vertical .exp-track {
+  width: 10px;
+  height: 100%;
+  margin: 0 auto;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.exp-vertical .exp-fill {
+  top: auto;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: calc(var(--pct, 0) * 1%);
+  border-radius: 5px;
+  background: linear-gradient(0deg, #34d058, #ffd60a 70%, #ff453a);
+}
+
+.exp-vertical .exp-thumb {
+  top: auto;
+  left: 50%;
+  bottom: calc(var(--pct, 0) * 1%);
+  transform: translate(-50%, 50%);
+  width: 24px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--handle-color);
+}
+
+.exp-vertical .exp-range {
+  writing-mode: vertical-lr;
+  direction: rtl;
+  -webkit-appearance: slider-vertical;
+}
+
+/* ---------- 4. Rotary Knob ---------- */
+
+.exp-control-knob {
+  height: 100px;
+  justify-content: center;
+}
+
+.exp-knob-dial {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.15), transparent 60%),
+    var(--page-bg);
+  border: 2px solid rgba(255, 255, 255, 0.12);
+}
+
+.exp-knob-indicator {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  background: var(--handle-color);
+  transform-origin: 50% 30px;
+  transform: translateX(-50%) rotate(calc(var(--pct, 0) * 2.7deg - 135deg));
+}
+
+.exp-knob .exp-range {
+  writing-mode: vertical-lr;
+  direction: rtl;
+  -webkit-appearance: slider-vertical;
+}
+
+/* ---------- 5. Segmented Ticks ---------- */
+
+.exp-ticks-track {
+  position: relative;
+  height: 28px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.exp-ticks-track::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    #0863e3 calc(var(--pct, 0) * 1%),
+    transparent calc(var(--pct, 0) * 1%)
+  );
+}
+
+.exp-ticks-track::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--card-bg) 0,
+    var(--card-bg) 2px,
+    transparent 2px,
+    transparent calc(100% / 10)
+  );
+  pointer-events: none;
+}
+
+/* ---------- 6. Glassmorphism ---------- */
+
+.exp-glass .exp-control {
+  height: 28px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.exp-glass .exp-track {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.exp-glass .exp-fill {
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.25));
+}
+
+.exp-glass .exp-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+}
+
+/* ---------- 7. Capsule Toggle ---------- */
+
+.exp-capsule .exp-track {
+  height: 34px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.exp-capsule .exp-fill {
+  border-radius: 999px;
+  background: linear-gradient(90deg, #34d058, #0863e3);
+}
+
+.exp-capsule .exp-thumb {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--handle-color);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* ---------- 8. Retro LED Meter ---------- */
+
+.exp-led-row {
+  display: flex;
+  gap: 3px;
+  height: 28px;
+  align-items: flex-end;
+}
+
+.led {
+  flex: 1;
+  height: 40%;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  transition: height 120ms ease-out, background-color 120ms ease-out;
+}
+
+.led.lit {
+  height: 100%;
+}
+
+.exp-led .led:nth-child(-n + 12).lit {
+  background: #34d058;
+}
+
+.exp-led .led:nth-child(n + 13):nth-child(-n + 16).lit {
+  background: #ffd60a;
+}
+
+.exp-led .led:nth-child(n + 17).lit {
+  background: #ff453a;
+}
+
+/* ---------- 9. Minimal Line ---------- */
+
+.exp-minimal .exp-track {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.exp-minimal .exp-thumb {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--handle-color);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.6);
+  transition: opacity 150ms ease-out, transform 150ms ease-out;
+}
+
+.exp-minimal .exp-control:hover .exp-thumb,
+.exp-minimal .exp-control:active .exp-thumb {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* ---------- 10. Liquid Wave ---------- */
+
+.exp-wave .exp-track {
+  height: 22px;
+  border-radius: 11px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.exp-wave .exp-fill {
+  border-radius: 11px;
+  background: linear-gradient(120deg, #0863e3, #34d058, #0863e3);
+  background-size: 200% 200%;
+  animation: exp-wave-shimmer 4s ease-in-out infinite;
+}
+
+@keyframes exp-wave-shimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}

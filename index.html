@@ -10,6 +10,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">
 <link rel="manifest" href="favicon_io/site.webmanifest">
 <link rel="stylesheet" href="styles/main.css">
+<link rel="stylesheet" href="styles/experiments.css">
 </head>
 <body>
 
@@ -30,6 +31,7 @@
       <nav class="sidebar-nav">
         <div class="nav-group">
           <button class="nav-item is-active" data-target="sliders">Sliders</button>
+          <button class="nav-item" data-target="experiments">Experiments</button>
         </div>
       </nav>
     </aside>
@@ -212,10 +214,157 @@
           </div>
         </div>
       </section>
+
+      <section class="panel experiments-panel" id="experiments" data-panel hidden>
+        <div class="experiments-card">
+          <h1 class="panel-title">Experiments</h1>
+
+          <div class="experiments-grid">
+
+            <div class="exp-item exp-neon" data-min="0" data-max="100" data-value="65" data-decimals="0" data-unit="%">
+              <div class="exp-head">
+                <span class="exp-name">Neon Glow</span>
+                <span class="exp-value">65%</span>
+              </div>
+              <div class="exp-control">
+                <div class="exp-track">
+                  <div class="exp-fill"></div>
+                  <div class="exp-thumb"></div>
+                </div>
+                <input class="exp-range" type="range" min="0" max="100" step="1" value="65">
+              </div>
+            </div>
+
+            <div class="exp-item exp-brutalist" data-min="0" data-max="11" data-value="7" data-decimals="0" data-unit="">
+              <div class="exp-head">
+                <span class="exp-name">Brutalist Block</span>
+                <span class="exp-value">7</span>
+              </div>
+              <div class="exp-control">
+                <div class="exp-track">
+                  <div class="exp-fill"></div>
+                  <div class="exp-thumb"></div>
+                </div>
+                <input class="exp-range" type="range" min="0" max="11" step="1" value="7">
+              </div>
+            </div>
+
+            <div class="exp-item exp-vertical" data-min="-60" data-max="6" data-value="-12" data-decimals="0" data-unit=" dB">
+              <div class="exp-head">
+                <span class="exp-name">Vertical Fader</span>
+                <span class="exp-value">-12 dB</span>
+              </div>
+              <div class="exp-control exp-control-vertical">
+                <div class="exp-track">
+                  <div class="exp-fill"></div>
+                  <div class="exp-thumb"></div>
+                </div>
+                <input class="exp-range" type="range" min="-60" max="6" step="1" value="-12">
+              </div>
+            </div>
+
+            <div class="exp-item exp-knob" data-min="20" data-max="20000" data-value="1200" data-decimals="0" data-unit=" Hz">
+              <div class="exp-head">
+                <span class="exp-name">Rotary Knob</span>
+                <span class="exp-value">1200 Hz</span>
+              </div>
+              <div class="exp-control exp-control-knob">
+                <div class="exp-knob-dial">
+                  <div class="exp-knob-indicator"></div>
+                </div>
+                <input class="exp-range" type="range" min="20" max="20000" step="1" value="1200">
+              </div>
+            </div>
+
+            <div class="exp-item exp-ticks" data-min="0" data-max="10" data-value="6" data-decimals="0" data-unit="">
+              <div class="exp-head">
+                <span class="exp-name">Segmented Ticks</span>
+                <span class="exp-value">6</span>
+              </div>
+              <div class="exp-control">
+                <div class="exp-track exp-ticks-track"></div>
+                <input class="exp-range" type="range" min="0" max="10" step="1" value="6">
+              </div>
+            </div>
+
+            <div class="exp-item exp-glass" data-min="0" data-max="100" data-value="40" data-decimals="0" data-unit="%">
+              <div class="exp-head">
+                <span class="exp-name">Glassmorphism</span>
+                <span class="exp-value">40%</span>
+              </div>
+              <div class="exp-control">
+                <div class="exp-track">
+                  <div class="exp-fill"></div>
+                  <div class="exp-thumb"></div>
+                </div>
+                <input class="exp-range" type="range" min="0" max="100" step="1" value="40">
+              </div>
+            </div>
+
+            <div class="exp-item exp-capsule" data-min="0" data-max="100" data-value="72" data-decimals="0" data-unit="%">
+              <div class="exp-head">
+                <span class="exp-name">Capsule Toggle</span>
+                <span class="exp-value">72%</span>
+              </div>
+              <div class="exp-control">
+                <div class="exp-track">
+                  <div class="exp-fill"></div>
+                  <div class="exp-thumb"></div>
+                </div>
+                <input class="exp-range" type="range" min="0" max="100" step="1" value="72">
+              </div>
+            </div>
+
+            <div class="exp-item exp-led" data-min="0" data-max="100" data-value="55" data-decimals="0" data-unit="%">
+              <div class="exp-head">
+                <span class="exp-name">Retro LED Meter</span>
+                <span class="exp-value">55%</span>
+              </div>
+              <div class="exp-control">
+                <div class="exp-led-row">
+                  <div class="led"></div><div class="led"></div><div class="led"></div><div class="led"></div><div class="led"></div>
+                  <div class="led"></div><div class="led"></div><div class="led"></div><div class="led"></div><div class="led"></div>
+                  <div class="led"></div><div class="led"></div><div class="led"></div><div class="led"></div><div class="led"></div>
+                  <div class="led"></div><div class="led"></div><div class="led"></div><div class="led"></div><div class="led"></div>
+                </div>
+                <input class="exp-range" type="range" min="0" max="100" step="1" value="55">
+              </div>
+            </div>
+
+            <div class="exp-item exp-minimal" data-min="0" data-max="100" data-value="30" data-decimals="0" data-unit="%">
+              <div class="exp-head">
+                <span class="exp-name">Minimal Line</span>
+                <span class="exp-value">30%</span>
+              </div>
+              <div class="exp-control">
+                <div class="exp-track">
+                  <div class="exp-thumb"></div>
+                </div>
+                <input class="exp-range" type="range" min="0" max="100" step="1" value="30">
+              </div>
+            </div>
+
+            <div class="exp-item exp-wave" data-min="0" data-max="100" data-value="80" data-decimals="0" data-unit="%">
+              <div class="exp-head">
+                <span class="exp-name">Liquid Wave</span>
+                <span class="exp-value">80%</span>
+              </div>
+              <div class="exp-control">
+                <div class="exp-track">
+                  <div class="exp-fill"></div>
+                </div>
+                <input class="exp-range" type="range" min="0" max="100" step="1" value="80">
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
   <script src="scripts/slider.js"></script>
+  <script src="scripts/experiments.js"></script>
   <script src="scripts/app.js"></script>
 </body>
 </html>

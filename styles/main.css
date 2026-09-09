@@ -156,6 +156,7 @@ html.light-mode .theme-icon-light {
   color: var(--text-color);
   font-family: inherit;
   font-size: 14px;
+  text-transform: uppercase;
   padding: 8px 16px;
   cursor: pointer;
   transition: background-color 150ms ease-out;
@@ -191,7 +192,6 @@ html.light-mode .nav-item.is-active {
   font-weight: 300;
   color: #FFFFFF;
   text-transform: uppercase;
-  letter-spacing: 0.07rem;
   margin: 0 0 32px;
   transition: color 200ms ease-out;
 }
@@ -256,7 +256,6 @@ html.light-mode .panel-title {
   font-family: 'Baikal Trial Light', sans-serif;
   font-size: 14px;
   color: var(--text-color);
-  letter-spacing: 0.5px;
   user-select: none;
   transition: color 200ms ease-out;
 }
@@ -266,7 +265,6 @@ html.light-mode .panel-title {
   font-family: 'Baikal Trial Light', sans-serif;
   font-size: 14px;
   color: var(--text-color);
-  letter-spacing: 1px;
   font-variant-numeric: tabular-nums;
   transition: color 200ms ease-out;
 }

@@ -393,6 +393,7 @@ html.light-mode .panel-title {
   font-family: 'CommitMono', 'ui-monospace', 'Menlo', 'Consolas', monospace;
   font-weight: 300;
   font-size: 14px;
+  line-height: 16px;
   letter-spacing: 1px;
   user-select: text;
   color: inherit;

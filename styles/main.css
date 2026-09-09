@@ -148,15 +148,14 @@ html.light-mode .theme-icon-light {
 
 .nav-item {
   display: block;
-  width: 100%;
+  margin: 0 -16px;
   text-align: left;
   background: transparent;
   border: none;
   color: var(--text-color);
   font-family: inherit;
   font-size: 14px;
-  padding: 8px;
-  border-radius: 6px;
+  padding: 8px 16px;
   cursor: pointer;
   transition: background-color 150ms ease-out;
 }
@@ -167,6 +166,10 @@ html.light-mode .theme-icon-light {
 
 .nav-item.is-active {
   background: rgba(255, 255, 255, 0.1);
+}
+
+html.light-mode .nav-item.is-active {
+  background: #DCDDDE;
 }
 
 .content {

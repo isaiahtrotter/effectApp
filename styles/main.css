@@ -244,11 +244,6 @@ html.light-mode .theme-icon-light {
   opacity: 0.35;
 }
 
-.resize-handle-left {
-  left: 0;
-  border-radius: 16px 0 0 16px;
-}
-
 .resize-handle-right {
   right: 0;
   border-radius: 0 16px 16px 0;

@@ -53,7 +53,6 @@ function setupCardResize(handle, sign) {
 }
 
 setupCardResize(document.querySelector('.resize-handle-right'), 1);
-setupCardResize(document.querySelector('.resize-handle-left'), -1);
 
 document.querySelectorAll('.nav-item').forEach((btn) => {
   btn.addEventListener('click', () => {

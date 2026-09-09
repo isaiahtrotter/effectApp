@@ -77,8 +77,8 @@ if (freqWaveItem) {
   const FREQ_WAVE_BASE_WIDTH = 28;
 
   const WAVE_WIDTH = 32;
-  const WAVE_HEIGHT = 16;
-  const WAVE_AMPLITUDE = 6;
+  const WAVE_HEIGHT = 14;
+  const WAVE_AMPLITUDE = 5;
   const WAVE_MID = WAVE_HEIGHT / 2;
   const WAVE_SAMPLES = 64;
   const MIN_CYCLES = 1;

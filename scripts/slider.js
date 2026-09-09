@@ -99,11 +99,34 @@ function setupSlider(item) {
     return MAX_PULL * (1 - 1 / ((overshootPx * c) / MAX_PULL + 1));
   }
 
+  let releaseTimer = null;
+
+  // Pinning an inline pixel width is only needed while actually stretched
+  // past the track's edge — once the pull relaxes back to 0 we drop the
+  // inline width/transform entirely so the track goes back to its CSS
+  // 100% width and keeps following the card if it's resized afterward.
+  function releaseWrapWidth() {
+    wrap.style.width = '';
+    wrap.style.transform = '';
+    wrap.style.transition = '';
+  }
+
   function applyStretch(pull, dir, animate) {
-    const wrapTransition = animate ? `width ${stretchAnim()}, transform ${stretchAnim()}` : 'none';
-    wrap.style.transition = wrapTransition;
-    wrap.style.width = (baseWidthPx + pull) + 'px';
-    wrap.style.transform = dir === -1 ? `translateX(${-pull}px)` : 'translateX(0px)';
+    if (pull > 0.01) {
+      clearTimeout(releaseTimer);
+      wrap.style.transition = animate ? `width ${stretchAnim()}, transform ${stretchAnim()}` : 'none';
+      wrap.style.width = (baseWidthPx + pull) + 'px';
+      wrap.style.transform = dir === -1 ? `translateX(${-pull}px)` : 'translateX(0px)';
+    } else if (animate) {
+      wrap.style.transition = `width ${stretchAnim()}, transform ${stretchAnim()}`;
+      wrap.style.width = baseWidthPx + 'px';
+      wrap.style.transform = 'translateX(0px)';
+      clearTimeout(releaseTimer);
+      releaseTimer = setTimeout(releaseWrapWidth, stretchMs() + 30);
+    } else {
+      clearTimeout(releaseTimer);
+      releaseWrapWidth();
+    }
 
     updateGradientGeometry(currentPct);
     lastPull = pull;

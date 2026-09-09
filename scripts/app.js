@@ -68,6 +68,15 @@ if (elasticityToggle) {
   });
 }
 
+const freqWaveItem = document.querySelector('[data-freq-wave]');
+if (freqWaveItem) {
+  const freqInput = freqWaveItem.querySelector('.range-input');
+  const freqWave = freqWaveItem.querySelector('.freq-wave');
+  freqInput.addEventListener('input', () => {
+    freqWave.classList.add('is-visible');
+  });
+}
+
 document.querySelectorAll('.nav-item').forEach((btn) => {
   btn.addEventListener('click', () => {
     const target = btn.dataset.target;

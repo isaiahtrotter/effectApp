@@ -15,8 +15,8 @@
 }
 
 :root {
-  --bg: #171716;
-  --sidebar-bg: #131312;
+  --page-bg: #000000;
+  --card-bg: #171718;
   --border: #2A2A2A;
   --text-color: #D4D4D5;
   --text-dim: #8A8A8C;
@@ -34,8 +34,8 @@
 }
 
 html.light-mode {
-  --bg: #EFEFF1;
-  --sidebar-bg: #E4E4E7;
+  --page-bg: #EFEFF1;
+  --card-bg: #E4E4E7;
   --border: #D3D3D6;
   --text-color: #2E2E2F;
   --text-dim: #77777A;
@@ -55,7 +55,7 @@ html.light-mode {
 html, body {
   margin: 0;
   padding: 0;
-  background: var(--bg);
+  background: var(--page-bg);
   height: 100%;
   transition: background-color 200ms ease-out;
 }
@@ -70,16 +70,19 @@ body {
 
 .app {
   display: flex;
+  align-items: stretch;
   min-height: 100vh;
+  padding: 8px;
+  gap: 8px;
 }
 
 .sidebar {
   width: 260px;
   flex: 0 0 auto;
-  background: var(--sidebar-bg);
-  border-right: 1px solid var(--border);
+  background: var(--card-bg);
+  border-radius: 16px;
   padding: 20px 16px;
-  transition: background-color 200ms ease-out, border-color 200ms ease-out;
+  transition: background-color 200ms ease-out;
 }
 
 .sidebar-header {
@@ -168,6 +171,9 @@ html.light-mode .theme-icon-light {
 .panel {
   width: 100%;
   max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .panel-title {
@@ -180,7 +186,11 @@ html.light-mode .theme-icon-light {
 
 .slider-card {
   width: 100%;
-  padding: 0;
+  flex: 1;
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 28px 24px;
+  transition: background-color 200ms ease-out;
 }
 
 .slider-item + .slider-item {
@@ -239,7 +249,7 @@ html.light-mode .theme-icon-light {
 
 .value-num::selection {
   background: var(--text-color);
-  color: var(--bg);
+  color: var(--card-bg);
 }
 
 .label-group {

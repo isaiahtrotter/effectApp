@@ -102,7 +102,7 @@ body {
   margin-bottom: 16px;
 }
 
-.sidebar-title {
+.sidebar-header .sidebar-title {
   margin: 0;
 }
 
@@ -148,6 +148,7 @@ html.light-mode .theme-icon-light {
 
 .nav-item {
   display: block;
+  width: calc(100% + 32px);
   margin: 0 -16px;
   text-align: left;
   background: transparent;
@@ -188,10 +189,15 @@ html.light-mode .nav-item.is-active {
   font-family: 'Baikal Trial Light', sans-serif;
   font-size: 14px;
   font-weight: 300;
-  color: #000000;
+  color: #FFFFFF;
   text-transform: uppercase;
   letter-spacing: 0.07rem;
   margin: 0 0 32px;
+  transition: color 200ms ease-out;
+}
+
+html.light-mode .panel-title {
+  color: #000000;
 }
 
 /* ---------- slider component ---------- */

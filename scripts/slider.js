@@ -1,3 +1,12 @@
+// Shared across every slider instance so a single toggle can turn the
+// rubber-band overshoot effect on/off for all of them at once.
+let elasticityEnabled = true;
+window.sliderElasticity = {
+  setEnabled(enabled) {
+    elasticityEnabled = enabled;
+  },
+};
+
 function setupSlider(item) {
   const input   = item.querySelector('.range-input');
   const wrap    = item.querySelector('.track-wrap');
@@ -144,7 +153,7 @@ function setupSlider(item) {
       overshoot = e.clientX - trackRect.right;
       dir = 1;
     }
-    const pull = overshoot > 0 ? rubberBand(overshoot) : 0;
+    const pull = (elasticityEnabled && overshoot > 0) ? rubberBand(overshoot) : 0;
     applyStretch(pull, dir, false);
   }
 

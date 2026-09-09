@@ -41,6 +41,24 @@ function setupCardResize(handle, sign) {
 
 setupCardResize(document.querySelector('.resize-handle-right'), 1);
 
+const animSpeedItem = document.querySelector('[data-css-var="--anim-ms"]');
+if (animSpeedItem) {
+  const animSpeedInput = animSpeedItem.querySelector('.range-input');
+  animSpeedInput.addEventListener('input', () => {
+    document.documentElement.style.setProperty('--anim-ms', animSpeedInput.value);
+  });
+}
+
+const elasticityToggle = document.querySelector('[data-elasticity-toggle]');
+if (elasticityToggle) {
+  elasticityToggle.addEventListener('click', () => {
+    const isOn = !elasticityToggle.classList.contains('is-on');
+    elasticityToggle.classList.toggle('is-on', isOn);
+    elasticityToggle.setAttribute('aria-checked', String(isOn));
+    if (window.sliderElasticity) window.sliderElasticity.setEnabled(isOn);
+  });
+}
+
 document.querySelectorAll('.nav-item').forEach((btn) => {
   btn.addEventListener('click', () => {
     const target = btn.dataset.target;

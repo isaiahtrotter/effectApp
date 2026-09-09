@@ -9,25 +9,61 @@
 <body>
 
   <div class="app">
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <h1 class="panel-title sidebar-title">Components</h1>
-        <button class="theme-toggle" type="button" aria-label="Toggle light/dark theme">
-          <svg class="theme-icon theme-icon-dark" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M14 8.5C13.4 11.5 10.7 13.75 7.5 13.75C3.91 13.75 1 10.84 1 7.25C1 4.05 3.25 1.35 6.25 0.75C5.47 1.83 5 3.16 5 4.6C5 8.19 7.91 11.1 11.5 11.1C12.4 11.1 13.24 10.92 14 10.6C14 9.9 13.98 9.2 14 8.5Z" fill="currentColor"/>
-          </svg>
-          <svg class="theme-icon theme-icon-light" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="8" cy="8" r="3.25" fill="currentColor"/>
-            <path d="M8 0.5V2.5M8 13.5V15.5M15.5 8H13.5M2.5 8H0.5M13.16 2.84L11.75 4.25M4.25 11.75L2.84 13.16M13.16 13.16L11.75 11.75M4.25 4.25L2.84 2.84" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
-          </svg>
-        </button>
-      </div>
-      <nav class="sidebar-nav">
-        <div class="nav-group">
-          <button class="nav-item is-active" data-target="sliders">Sliders</button>
+    <div class="left-column">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <h1 class="panel-title sidebar-title">Components</h1>
+          <button class="theme-toggle" type="button" aria-label="Toggle light/dark theme">
+            <svg class="theme-icon theme-icon-dark" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M14 8.5C13.4 11.5 10.7 13.75 7.5 13.75C3.91 13.75 1 10.84 1 7.25C1 4.05 3.25 1.35 6.25 0.75C5.47 1.83 5 3.16 5 4.6C5 8.19 7.91 11.1 11.5 11.1C12.4 11.1 13.24 10.92 14 10.6C14 9.9 13.98 9.2 14 8.5Z" fill="currentColor"/>
+            </svg>
+            <svg class="theme-icon theme-icon-light" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="8" cy="8" r="3.25" fill="currentColor"/>
+              <path d="M8 0.5V2.5M8 13.5V15.5M15.5 8H13.5M2.5 8H0.5M13.16 2.84L11.75 4.25M4.25 11.75L2.84 13.16M13.16 13.16L11.75 11.75M4.25 4.25L2.84 2.84" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+            </svg>
+          </button>
         </div>
-      </nav>
-    </aside>
+        <nav class="sidebar-nav">
+          <div class="nav-group">
+            <button class="nav-item is-active" data-target="sliders">Sliders</button>
+          </div>
+        </nav>
+      </aside>
+
+      <div class="settings-card">
+        <div class="slider-item" data-min="25" data-max="300" data-value="65" data-decimals="0" data-css-var="--anim-ms">
+          <div class="row">
+            <span class="label-group">
+              <span class="label">Hover Animation Speed</span>
+            </span>
+            <span class="value"><input class="value-num" type="text" inputmode="numeric" value="65" size="3" maxlength="3" /><sup>ms</sup></span>
+          </div>
+
+          <div class="track-wrap">
+            <div class="gray-bar">
+              <div class="gray-fill before"></div>
+              <div class="gray-fill after"></div>
+            </div>
+            <div class="thumb"></div>
+            <input
+              class="range-input"
+              type="range"
+              min="25"
+              max="300"
+              step="1"
+              value="65"
+            />
+          </div>
+        </div>
+
+        <div class="switch-row">
+          <span class="label">Elasticity</span>
+          <button class="switch is-on" type="button" role="switch" aria-checked="true" data-elasticity-toggle>
+            <span class="switch-knob"></span>
+          </button>
+        </div>
+      </div>
+    </div>
 
     <main class="content">
       <section class="panel" id="sliders" data-panel>

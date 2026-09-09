@@ -511,12 +511,16 @@ html.light-mode .panel-title {
   left: 0%;
   width: var(--thumb-w);
   height: var(--thumb-h);
-  background: var(--handle-color);
+  background: #A5A5A5;
   border-radius: 0;
   transform: translateX(-50%);
   pointer-events: none;
   transition: width calc(var(--anim-ms) * 1ms) linear, height calc(var(--anim-ms) * 1ms) linear, background-color 200ms ease-out;
   z-index: 3;
+}
+
+.track-wrap.hovered .thumb {
+  background: var(--handle-color);
 }
 
 .range-input {

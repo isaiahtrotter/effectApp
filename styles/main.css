@@ -218,6 +218,7 @@ html.light-mode .theme-icon-light {
 /* ---------- slider component ---------- */
 
 .slider-card {
+  position: relative;
   width: 250px;
   min-width: 250px;
   max-width: 350px;
@@ -225,9 +226,34 @@ html.light-mode .theme-icon-light {
   background: var(--card-bg);
   border-radius: 16px;
   padding: 16px;
-  overflow: auto;
-  resize: horizontal;
   transition: background-color 200ms ease-out;
+}
+
+.resize-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  cursor: ew-resize;
+  background: var(--handle-color);
+  opacity: 0;
+  transition: opacity 150ms ease-out;
+  z-index: 5;
+}
+
+.resize-handle:hover,
+.resize-handle.is-dragging {
+  opacity: 0.35;
+}
+
+.resize-handle-left {
+  left: 0;
+  border-radius: 16px 0 0 16px;
+}
+
+.resize-handle-right {
+  right: 0;
+  border-radius: 0 16px 16px 0;
 }
 
 .slider-item + .slider-item {

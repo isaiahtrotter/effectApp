@@ -21,6 +21,15 @@ window.sliderColoredHandle = {
   },
 };
 
+// Shared so the "Shuffle Duration" control can adjust how long each
+// slider's shuffle tween/hover-simulation takes.
+let shuffleDuration = 150;
+window.sliderShuffle = {
+  setDuration(ms) {
+    shuffleDuration = ms;
+  },
+};
+
 const COLOR_STOPS = {
   temperature: [[0, '#DD4D37'], [14, '#FFD753'], [30, '#FFFFFF'], [72, '#53A1CE'], [100, '#0863E3']],
   mono: [[0, '#3A3A3C'], [100, '#FFFFFF']],
@@ -414,8 +423,8 @@ function setupSlider(item) {
       target = Math.round(target / step) * step;
     }
 
-    animateValueTo(target, 150);
-    simulateHover(150);
+    animateValueTo(target, shuffleDuration);
+    simulateHover(shuffleDuration);
   };
 
   input.addEventListener('input', update);

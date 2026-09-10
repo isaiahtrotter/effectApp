@@ -413,7 +413,8 @@ html.light-mode .shuffle-btn:hover {
   transition: opacity 150ms ease-out, color 200ms ease-out;
 }
 
-.slider-item:hover .freq-wave {
+.slider-item:hover .freq-wave,
+.slider-item.is-dragging .freq-wave {
   opacity: 1;
 }
 

@@ -7,6 +7,23 @@ if (themeToggle) {
 
 const sliderCard = document.querySelector('.slider-card');
 
+function isTypingContext() {
+  const active = document.activeElement;
+  return !!active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable);
+}
+
+function onKey(key, handler) {
+  document.addEventListener('keydown', (e) => {
+    if (e.key.toLowerCase() !== key) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (isTypingContext()) return;
+    e.preventDefault();
+    handler();
+  });
+}
+
+let shuffleDelay = 25;
+
 const shuffleBtn = document.querySelector('[data-shuffle-btn]');
 if (shuffleBtn && sliderCard) {
   shuffleBtn.addEventListener('click', () => {
@@ -14,8 +31,26 @@ if (shuffleBtn && sliderCard) {
     items.forEach((item, i) => {
       setTimeout(() => {
         if (item.shuffleValue) item.shuffleValue();
-      }, i * 25);
+      }, i * shuffleDelay);
     });
+  });
+
+  onKey(' ', () => shuffleBtn.click());
+}
+
+const shuffleDurationItem = document.querySelector('[data-shuffle-duration]');
+if (shuffleDurationItem) {
+  const durationInput = shuffleDurationItem.querySelector('.range-input');
+  durationInput.addEventListener('input', () => {
+    if (window.sliderShuffle) window.sliderShuffle.setDuration(Number(durationInput.value));
+  });
+}
+
+const shuffleDelayItem = document.querySelector('[data-shuffle-delay]');
+if (shuffleDelayItem) {
+  const delayInput = shuffleDelayItem.querySelector('.range-input');
+  delayInput.addEventListener('input', () => {
+    shuffleDelay = Number(delayInput.value);
   });
 }
 
@@ -91,6 +126,8 @@ if (minimalToggle && sliderCard) {
     if (coloredHandleRow) coloredHandleRow.hidden = !isOn;
     window.dispatchEvent(new Event('slider-mode-change'));
   });
+
+  onKey('m', () => minimalToggle.click());
 }
 
 const coloredHandleToggle = document.querySelector('[data-colored-handle-toggle]');

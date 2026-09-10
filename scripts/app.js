@@ -7,6 +7,18 @@ if (themeToggle) {
 
 const sliderCard = document.querySelector('.slider-card');
 
+const shuffleBtn = document.querySelector('[data-shuffle-btn]');
+if (shuffleBtn && sliderCard) {
+  shuffleBtn.addEventListener('click', () => {
+    const items = sliderCard.querySelectorAll('.slider-item');
+    items.forEach((item, i) => {
+      setTimeout(() => {
+        if (item.shuffleValue) item.shuffleValue();
+      }, i * 25);
+    });
+  });
+}
+
 function setupCardResize(handle, sign) {
   if (!handle || !sliderCard) return;
 

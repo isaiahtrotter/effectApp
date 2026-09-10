@@ -27,6 +27,10 @@ const COLOR_STOPS = {
   hue: [[0, '#FF0000'], [17, '#FFFF00'], [33, '#00FF00'], [50, '#00FFFF'], [67, '#0000FF'], [83, '#FF00FF'], [100, '#FF0000']],
 };
 
+function easeOutCubic(t) {
+  return 1 - Math.pow(1 - t, 3);
+}
+
 function hexToRgb(hex) {
   const n = parseInt(hex.slice(1), 16);
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
@@ -348,6 +352,71 @@ function setupSlider(item) {
     window.addEventListener('slider-mode-change', update);
     window.addEventListener('slider-colored-handle-change', update);
   }
+
+  let simulateHoverTimer = null;
+
+  // Mirrors the visual feedback of a real hover/drag (thickened track,
+  // popped gradient/swatch, colored thumb) for a fixed duration, so a
+  // programmatic value change (shuffle) looks the same as a manual one.
+  function simulateHover(duration) {
+    clearTimeout(simulateHoverTimer);
+    wrap.classList.add('hovered');
+    item.classList.add('is-dragging');
+    itemHovered = true;
+    update();
+
+    simulateHoverTimer = setTimeout(() => {
+      item.classList.remove('is-dragging');
+      if (!item.matches(':hover')) itemHovered = false;
+      if (!wrap.matches(':hover')) wrap.classList.remove('hovered');
+      update();
+    }, duration);
+  }
+
+  let shuffleFrame = null;
+
+  function animateValueTo(target, duration) {
+    const min = parseFloat(input.min);
+    const max = parseFloat(input.max);
+    const start = parseFloat(input.value);
+    const clampedTarget = Math.min(max, Math.max(min, target));
+    if (shuffleFrame) cancelAnimationFrame(shuffleFrame);
+
+    if (clampedTarget === start) return;
+
+    const startTime = performance.now();
+
+    function frame(now) {
+      const t = Math.min(1, (now - startTime) / duration);
+      input.value = start + (clampedTarget - start) * easeOutCubic(t);
+      // Dispatch a real 'input' event rather than calling update() directly,
+      // so other listeners tied to this slider (e.g. the frequency wave's
+      // redraw) stay in sync during and after the animation.
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      if (t < 1) {
+        shuffleFrame = requestAnimationFrame(frame);
+      } else {
+        shuffleFrame = null;
+      }
+    }
+
+    shuffleFrame = requestAnimationFrame(frame);
+  }
+
+  item.shuffleValue = function shuffleValue() {
+    const min = parseFloat(input.min);
+    const max = parseFloat(input.max);
+    const rawStep = parseFloat(input.step);
+    const step = isNaN(rawStep) || rawStep <= 0 ? 0 : rawStep;
+
+    let target = min + Math.random() * (max - min);
+    if (step > 0) {
+      target = Math.round(target / step) * step;
+    }
+
+    animateValueTo(target, 150);
+    simulateHover(150);
+  };
 
   input.addEventListener('input', update);
   update();

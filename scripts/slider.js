@@ -1,7 +1,7 @@
 // Shared across every slider instance so a single toggle/slider can
 // control the rubber-band overshoot effect for all of them at once.
 let elasticityEnabled = true;
-let elasticityStrength = 6;
+let elasticityStrength = 5;
 window.sliderElasticity = {
   setEnabled(enabled) {
     elasticityEnabled = enabled;
@@ -10,6 +10,48 @@ window.sliderElasticity = {
     elasticityStrength = strength;
   },
 };
+
+// Shared across every color-swatch slider so the "Colored Handle" toggle
+// can turn thumb recoloring on/off for all of them at once.
+let coloredHandleEnabled = true;
+window.sliderColoredHandle = {
+  setEnabled(enabled) {
+    coloredHandleEnabled = enabled;
+    window.dispatchEvent(new Event('slider-colored-handle-change'));
+  },
+};
+
+const COLOR_STOPS = {
+  temperature: [[0, '#DD4D37'], [14, '#FFD753'], [30, '#FFFFFF'], [72, '#53A1CE'], [100, '#0863E3']],
+  mono: [[0, '#3A3A3C'], [100, '#FFFFFF']],
+  hue: [[0, '#FF0000'], [17, '#FFFF00'], [33, '#00FF00'], [50, '#00FFFF'], [67, '#0000FF'], [83, '#FF00FF'], [100, '#FF0000']],
+};
+
+function hexToRgb(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+function colorAtPercent(stops, pct) {
+  const p = Math.min(100, Math.max(0, pct));
+  let lo = stops[0];
+  let hi = stops[stops.length - 1];
+  for (let i = 0; i < stops.length - 1; i++) {
+    if (p >= stops[i][0] && p <= stops[i + 1][0]) {
+      lo = stops[i];
+      hi = stops[i + 1];
+      break;
+    }
+  }
+  const span = hi[0] - lo[0];
+  const t = span === 0 ? 0 : (p - lo[0]) / span;
+  const [r1, g1, b1] = hexToRgb(lo[1]);
+  const [r2, g2, b2] = hexToRgb(hi[1]);
+  const r = Math.round(r1 + (r2 - r1) * t);
+  const g = Math.round(g1 + (g2 - g1) * t);
+  const b = Math.round(b1 + (b2 - b1) * t);
+  return `rgb(${r}, ${g}, ${b})`;
+}
 
 function setupSlider(item) {
   const input   = item.querySelector('.range-input');
@@ -22,6 +64,8 @@ function setupSlider(item) {
   const thumb   = item.querySelector('.thumb');
   const valueEl = item.querySelector('.value-num');
   const decimals = parseInt(item.dataset.decimals || '0', 10);
+  const swatchEl = item.querySelector('.color-swatch');
+  const colorStops = COLOR_STOPS[item.dataset.swatch];
 
   const STRETCH_EASE = 'ease-out';
 
@@ -67,6 +111,13 @@ function setupSlider(item) {
     valueEl.size = valueEl.value.length;
 
     updateGradientGeometry(currentPct);
+
+    if (colorStops) {
+      const color = colorAtPercent(colorStops, currentPct);
+      if (swatchEl) swatchEl.style.backgroundColor = color;
+      const minimalActive = item.closest('.slider-card')?.classList.contains('minimal-mode');
+      thumb.style.backgroundColor = (minimalActive && coloredHandleEnabled && (dragging || itemHovered)) ? color : '';
+    }
   }
 
   function selectAllValue() {
@@ -120,6 +171,7 @@ function setupSlider(item) {
   });
 
   let dragging = false;
+  let itemHovered = false;
   let trackRect = null;
   let baseWidthPx = 0;
   let lastPull = 0;
@@ -227,6 +279,8 @@ function setupSlider(item) {
     baseWidthPx = trackRect.width;
     applyStretch(0, 0, false);
     wrap.classList.add('hovered');
+    item.classList.add('is-dragging');
+    update();
   });
   window.addEventListener('pointermove', onDragMove);
   window.addEventListener('pointerup', () => {
@@ -234,6 +288,8 @@ function setupSlider(item) {
 
     if (dragging) {
       dragging = false;
+      item.classList.remove('is-dragging');
+      update();
       wasPulled = lastPull > 0.01;
 
       if (wasPulled) {
@@ -278,6 +334,19 @@ function setupSlider(item) {
     row.addEventListener('mouseleave', () => {
       setTimeout(() => iconBtn.classList.remove('icon-active'), 160);
     });
+  }
+
+  if (colorStops) {
+    item.addEventListener('mouseenter', () => {
+      itemHovered = true;
+      update();
+    });
+    item.addEventListener('mouseleave', () => {
+      itemHovered = false;
+      update();
+    });
+    window.addEventListener('slider-mode-change', update);
+    window.addEventListener('slider-colored-handle-change', update);
   }
 
   input.addEventListener('input', update);

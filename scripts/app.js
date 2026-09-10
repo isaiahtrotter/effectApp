@@ -68,6 +68,29 @@ if (elasticityToggle) {
   });
 }
 
+const minimalToggle = document.querySelector('[data-minimal-toggle]');
+const coloredHandleRow = document.querySelector('[data-colored-handle-row]');
+if (minimalToggle && sliderCard) {
+  minimalToggle.addEventListener('click', () => {
+    const isOn = !minimalToggle.classList.contains('is-on');
+    minimalToggle.classList.toggle('is-on', isOn);
+    minimalToggle.setAttribute('aria-checked', String(isOn));
+    sliderCard.classList.toggle('minimal-mode', isOn);
+    if (coloredHandleRow) coloredHandleRow.hidden = !isOn;
+    window.dispatchEvent(new Event('slider-mode-change'));
+  });
+}
+
+const coloredHandleToggle = document.querySelector('[data-colored-handle-toggle]');
+if (coloredHandleToggle) {
+  coloredHandleToggle.addEventListener('click', () => {
+    const isOn = !coloredHandleToggle.classList.contains('is-on');
+    coloredHandleToggle.classList.toggle('is-on', isOn);
+    coloredHandleToggle.setAttribute('aria-checked', String(isOn));
+    if (window.sliderColoredHandle) window.sliderColoredHandle.setEnabled(isOn);
+  });
+}
+
 const freqWaveItem = document.querySelector('[data-freq-wave]');
 if (freqWaveItem) {
   const freqInput = freqWaveItem.querySelector('.range-input');

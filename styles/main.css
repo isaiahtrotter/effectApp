@@ -385,6 +385,30 @@ html.light-mode .panel-title {
   opacity: 1;
 }
 
+.color-swatch {
+  display: none;
+  width: 10px;
+  height: 10px;
+  margin-right: 8px;
+  border-radius: 0;
+  opacity: 0;
+  vertical-align: 0;
+  transition: opacity 150ms ease-out;
+}
+
+.slider-item:hover .color-swatch,
+.slider-item.is-dragging .color-swatch {
+  opacity: 1;
+}
+
+.slider-card.minimal-mode .color-swatch {
+  display: inline-block;
+}
+
+.slider-card.minimal-mode .gradient-seg {
+  display: none;
+}
+
 .value-num {
   font-family: 'CommitMono', 'ui-monospace', 'Menlo', 'Consolas', monospace;
   font-weight: 300;
@@ -519,6 +543,19 @@ html.light-mode .panel-title {
     to right,
     #3A3A3C 0%,
     #FFFFFF 100%
+  );
+}
+
+.gradient-seg.hue {
+  background-image: linear-gradient(
+    to right,
+    #FF0000 0%,
+    #FFFF00 17%,
+    #00FF00 33%,
+    #00FFFF 50%,
+    #0000FF 67%,
+    #FF00FF 83%,
+    #FF0000 100%
   );
 }
 

@@ -442,6 +442,10 @@ html.light-mode .shuffle-btn:hover {
   display: none;
 }
 
+.slider-card.v2-mode .gradient-seg.after {
+  display: none;
+}
+
 .value-num {
   font-family: 'CommitMono', 'ui-monospace', 'Menlo', 'Consolas', monospace;
   font-weight: 300;

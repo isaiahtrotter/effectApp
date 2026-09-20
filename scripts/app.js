@@ -130,6 +130,16 @@ if (minimalToggle && sliderCard) {
   onKey('m', () => minimalToggle.click());
 }
 
+const v2Toggle = document.querySelector('[data-v2-toggle]');
+if (v2Toggle && sliderCard) {
+  v2Toggle.addEventListener('click', () => {
+    const isOn = !v2Toggle.classList.contains('is-on');
+    v2Toggle.classList.toggle('is-on', isOn);
+    v2Toggle.setAttribute('aria-checked', String(isOn));
+    sliderCard.classList.toggle('v2-mode', isOn);
+  });
+}
+
 const coloredHandleToggle = document.querySelector('[data-colored-handle-toggle]');
 if (coloredHandleToggle) {
   coloredHandleToggle.addEventListener('click', () => {

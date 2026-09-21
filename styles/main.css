@@ -362,6 +362,11 @@ html.light-mode .shuffle-btn:hover {
   margin: 0;
 }
 
+.slider-item[data-blur] {
+  filter: blur(0px);
+  transition: filter 100ms ease-out;
+}
+
 .slider-group + .slider-item {
   margin-top: 32px;
 }

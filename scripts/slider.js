@@ -52,6 +52,12 @@ const COLOR_STOPS = {
   'yellow-light': [[0, '#D0D0D0'], [100, '#FFFF00']],
 };
 
+// A slider's "0-100%" range maps to blur(0px)-blur(FULL_BLUR_PX px), but the
+// Blur control itself is only ever allowed to reach BLUR_CAP of that full
+// range, so its 100% still reads as a modest 30% blur rather than a full one.
+const FULL_BLUR_PX = 20;
+const BLUR_CAP = 0.15;
+
 function easeOutCubic(t) {
   return 1 - Math.pow(1 - t, 3);
 }
@@ -393,6 +399,27 @@ function setupSlider(item) {
     if (themeToggle) themeToggle.addEventListener('click', update);
   }
 
+  const isBlur = item.hasAttribute('data-blur');
+
+  if (isBlur) {
+    function applyBlur() {
+      // The shuffle tween's final 'input' event can land a frame after its
+      // is-dragging window closes (rAF vs. setTimeout drift), which would
+      // otherwise re-blur the slider right after it was reset to 0.
+      if (!item.classList.contains('is-dragging')) return;
+      const min = parseFloat(input.min);
+      const max = parseFloat(input.max);
+      const pct = (parseFloat(input.value) - min) / (max - min);
+      item.style.filter = `blur(${(pct * FULL_BLUR_PX * BLUR_CAP).toFixed(2)}px)`;
+    }
+
+    input.addEventListener('input', applyBlur);
+
+    window.addEventListener('pointerup', () => {
+      item.style.filter = 'blur(0px)';
+    });
+  }
+
   let simulateHoverTimer = null;
 
   // Mirrors the visual feedback of a real hover/drag (thickened track,
@@ -410,6 +437,7 @@ function setupSlider(item) {
       if (!item.matches(':hover')) itemHovered = false;
       if (!wrap.matches(':hover')) wrap.classList.remove('hovered');
       update();
+      if (isBlur) item.style.filter = 'blur(0px)';
     }, duration);
   }
 

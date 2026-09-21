@@ -24,10 +24,17 @@ function onKey(key, handler) {
 
 let shuffleDelay = 25;
 
+function isInClosedGroup(item) {
+  const group = item.closest('details.slider-group');
+  return !!group && !group.open;
+}
+
 const shuffleBtn = document.querySelector('[data-shuffle-btn]');
 if (shuffleBtn && sliderCard) {
   shuffleBtn.addEventListener('click', () => {
-    const items = sliderCard.querySelectorAll('.slider-item');
+    const items = Array.from(sliderCard.querySelectorAll('.slider-item')).filter(
+      (item) => !isInClosedGroup(item)
+    );
     items.forEach((item, i) => {
       setTimeout(() => {
         if (item.shuffleValue) item.shuffleValue();

@@ -34,6 +34,9 @@ const COLOR_STOPS = {
   temperature: [[0, '#DD4D37'], [14, '#FFD753'], [30, '#FFFFFF'], [72, '#53A1CE'], [100, '#0863E3']],
   mono: [[0, '#3A3A3C'], [100, '#FFFFFF']],
   hue: [[0, '#FF0000'], [17, '#FFFF00'], [33, '#00FF00'], [50, '#00FFFF'], [67, '#0000FF'], [83, '#FF00FF'], [100, '#FF0000']],
+  saturation: [[0, '#282828'], [100, '#f40000']],
+  'saturation-light': [[0, '#D0D0D0'], [100, '#f40000']],
+  tint: [[0, '#00FF00'], [50, '#FFFFFF'], [100, '#FF00FF']],
 };
 
 function easeOutCubic(t) {
@@ -78,7 +81,14 @@ function setupSlider(item) {
   const valueEl = item.querySelector('.value-num');
   const decimals = parseInt(item.dataset.decimals || '0', 10);
   const swatchEl = item.querySelector('.color-swatch');
-  const colorStops = COLOR_STOPS[item.dataset.swatch];
+  const swatchKey = item.dataset.swatch;
+
+  function colorStops() {
+    if (swatchKey === 'saturation' && document.documentElement.classList.contains('light-mode')) {
+      return COLOR_STOPS['saturation-light'];
+    }
+    return COLOR_STOPS[swatchKey];
+  }
 
   const STRETCH_EASE = 'ease-out';
 
@@ -125,8 +135,9 @@ function setupSlider(item) {
 
     updateGradientGeometry(currentPct);
 
-    if (colorStops) {
-      const color = colorAtPercent(colorStops, currentPct);
+    const stops = colorStops();
+    if (stops) {
+      const color = colorAtPercent(stops, currentPct);
       if (swatchEl) swatchEl.style.backgroundColor = color;
       const minimalActive = item.closest('.slider-card')?.classList.contains('minimal-mode');
       thumb.style.backgroundColor = (minimalActive && coloredHandleEnabled && (dragging || itemHovered)) ? color : '';
@@ -349,7 +360,7 @@ function setupSlider(item) {
     });
   }
 
-  if (colorStops) {
+  if (colorStops()) {
     item.addEventListener('mouseenter', () => {
       itemHovered = true;
       update();
@@ -360,6 +371,11 @@ function setupSlider(item) {
     });
     window.addEventListener('slider-mode-change', update);
     window.addEventListener('slider-colored-handle-change', update);
+  }
+
+  if (swatchKey === 'saturation') {
+    const themeToggle = document.querySelector('.theme-toggle');
+    if (themeToggle) themeToggle.addEventListener('click', update);
   }
 
   let simulateHoverTimer = null;

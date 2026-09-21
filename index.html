@@ -36,7 +36,7 @@
 
     <main class="content">
       <section class="panel" id="sliders" data-panel>
-        <div class="slider-card">
+        <div class="slider-card v2-mode">
           <div class="resize-handle resize-handle-right"></div>
 
           <button class="shuffle-btn" type="button" aria-label="Shuffle slider values" data-shuffle-btn>
@@ -162,6 +162,80 @@
             </div>
           </div>
 
+          <div class="slider-item" data-min="0" data-max="1" data-value="0.5" data-decimals="2" data-swatch="saturation">
+            <div class="row">
+              <span class="label-group">
+                <span class="label">Saturation</span>
+                <button class="icon-btn" type="button" aria-label="Add" tabindex="-1">
+                  <svg class="icon-default" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="7.9502" y="-0.535569" width="12" height="12" rx="2.5" transform="rotate(45 7.9502 -0.535569)" stroke="currentColor"/>
+                    <rect x="7.4502" y="4.44971" width="1" height="7" rx="0.5" fill="currentColor"/>
+                    <rect x="11.4502" y="7.44971" width="1" height="7" rx="0.5" transform="rotate(90 11.4502 7.44971)" fill="currentColor"/>
+                  </svg>
+                  <svg class="icon-hover" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5.8291 0.878906C7.00067 -0.292667 8.89972 -0.292667 10.0713 0.878906L15.0215 5.82812C16.1931 6.9997 16.1931 8.89972 15.0215 10.0713L10.0713 15.0205C8.89972 16.1921 7.00067 16.1921 5.8291 15.0205L0.878906 10.0713C-0.292667 8.89972 -0.292667 6.9997 0.878906 5.82812L5.8291 0.878906ZM7.9502 4.4502C7.67405 4.4502 7.4502 4.67405 7.4502 4.9502V7.4502H4.9502C4.67405 7.4502 4.4502 7.67405 4.4502 7.9502C4.45046 8.22611 4.67422 8.4502 4.9502 8.4502H7.4502V10.9502C7.45046 11.2261 7.67422 11.4502 7.9502 11.4502C8.22617 11.4502 8.44993 11.2261 8.4502 10.9502V8.4502H10.9502C11.2262 8.4502 11.4499 8.22611 11.4502 7.9502C11.4502 7.67405 11.2263 7.4502 10.9502 7.4502H8.4502V4.9502C8.4502 4.67405 8.22634 4.4502 7.9502 4.4502Z" fill="currentColor"/>
+                  </svg>
+                </button>
+              </span>
+              <span class="value"><span class="color-swatch" aria-hidden="true"></span><input class="value-num" type="text" inputmode="decimal" value="0.50" size="4" maxlength="4" /></span>
+            </div>
+
+            <div class="track-wrap">
+              <div class="gray-bar">
+                <div class="gray-fill before"></div>
+                <div class="gray-fill after"></div>
+              </div>
+              <div class="gradient-seg before saturation"></div>
+              <div class="gradient-seg after saturation"></div>
+              <div class="thumb"></div>
+              <input
+                class="range-input"
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value="0.5"
+              />
+            </div>
+          </div>
+
+          <div class="slider-item" data-min="-1" data-max="1" data-value="0" data-decimals="2" data-swatch="tint">
+            <div class="row">
+              <span class="label-group">
+                <span class="label">Tint</span>
+                <button class="icon-btn" type="button" aria-label="Add" tabindex="-1">
+                  <svg class="icon-default" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="7.9502" y="-0.535569" width="12" height="12" rx="2.5" transform="rotate(45 7.9502 -0.535569)" stroke="currentColor"/>
+                    <rect x="7.4502" y="4.44971" width="1" height="7" rx="0.5" fill="currentColor"/>
+                    <rect x="11.4502" y="7.44971" width="1" height="7" rx="0.5" transform="rotate(90 11.4502 7.44971)" fill="currentColor"/>
+                  </svg>
+                  <svg class="icon-hover" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5.8291 0.878906C7.00067 -0.292667 8.89972 -0.292667 10.0713 0.878906L15.0215 5.82812C16.1931 6.9997 16.1931 8.89972 15.0215 10.0713L10.0713 15.0205C8.89972 16.1921 7.00067 16.1921 5.8291 15.0205L0.878906 10.0713C-0.292667 8.89972 -0.292667 6.9997 0.878906 5.82812L5.8291 0.878906ZM7.9502 4.4502C7.67405 4.4502 7.4502 4.67405 7.4502 4.9502V7.4502H4.9502C4.67405 7.4502 4.4502 7.67405 4.4502 7.9502C4.45046 8.22611 4.67422 8.4502 4.9502 8.4502H7.4502V10.9502C7.45046 11.2261 7.67422 11.4502 7.9502 11.4502C8.22617 11.4502 8.44993 11.2261 8.4502 10.9502V8.4502H10.9502C11.2262 8.4502 11.4499 8.22611 11.4502 7.9502C11.4502 7.67405 11.2263 7.4502 10.9502 7.4502H8.4502V4.9502C8.4502 4.67405 8.22634 4.4502 7.9502 4.4502Z" fill="currentColor"/>
+                  </svg>
+                </button>
+              </span>
+              <span class="value"><span class="color-swatch" aria-hidden="true"></span><input class="value-num" type="text" inputmode="decimal" value="0.00" size="5" maxlength="5" /></span>
+            </div>
+
+            <div class="track-wrap">
+              <div class="gray-bar">
+                <div class="gray-fill before"></div>
+                <div class="gray-fill after"></div>
+              </div>
+              <div class="gradient-seg before tint"></div>
+              <div class="gradient-seg after tint"></div>
+              <div class="thumb"></div>
+              <input
+                class="range-input"
+                type="range"
+                min="-1"
+                max="1"
+                step="0.01"
+                value="0"
+              />
+            </div>
+          </div>
+
           <div class="slider-item" data-min="100" data-max="20000" data-value="400" data-decimals="0" data-freq-wave>
             <div class="row">
               <span class="label-group">
@@ -212,7 +286,7 @@
 
           <div class="switch-row">
             <span class="label">Sliders v2</span>
-            <button class="switch" type="button" role="switch" aria-checked="false" data-v2-toggle>
+            <button class="switch is-on" type="button" role="switch" aria-checked="true" data-v2-toggle>
               <span class="switch-knob"></span>
             </button>
           </div>

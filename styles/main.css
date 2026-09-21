@@ -596,6 +596,31 @@ html.light-mode .shuffle-btn:hover {
   );
 }
 
+.gradient-seg.saturation {
+  background-image: linear-gradient(
+    to right,
+    #282828 0%,
+    #f40000 100%
+  );
+}
+
+html.light-mode .gradient-seg.saturation {
+  background-image: linear-gradient(
+    to right,
+    #D0D0D0 0%,
+    #f40000 100%
+  );
+}
+
+.gradient-seg.tint {
+  background-image: linear-gradient(
+    to right,
+    #00FF00 0%,
+    #FFFFFF 50%,
+    #FF00FF 100%
+  );
+}
+
 .thumb {
   position: absolute;
   bottom: 0;

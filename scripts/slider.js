@@ -36,7 +36,20 @@ const COLOR_STOPS = {
   hue: [[0, '#FF0000'], [17, '#FFFF00'], [33, '#00FF00'], [50, '#00FFFF'], [67, '#0000FF'], [83, '#FF00FF'], [100, '#FF0000']],
   saturation: [[0, '#282828'], [100, '#f40000']],
   'saturation-light': [[0, '#D0D0D0'], [100, '#f40000']],
-  tint: [[0, '#00FF00'], [50, '#FFFFFF'], [100, '#FF00FF']],
+  tint: [[0, '#00FF00'], [50, '#353536'], [100, '#FF00FF']],
+  'tint-light': [[0, '#00FF00'], [50, '#FFFFFF'], [100, '#FF00FF']],
+  red: [[0, '#353536'], [100, '#FF0000']],
+  'red-light': [[0, '#D0D0D0'], [100, '#FF0000']],
+  green: [[0, '#353536'], [100, '#00FF00']],
+  'green-light': [[0, '#D0D0D0'], [100, '#00FF00']],
+  blue: [[0, '#353536'], [100, '#0000FF']],
+  'blue-light': [[0, '#D0D0D0'], [100, '#0000FF']],
+  cyan: [[0, '#353536'], [100, '#00FFFF']],
+  'cyan-light': [[0, '#D0D0D0'], [100, '#00FFFF']],
+  magenta: [[0, '#353536'], [100, '#FF00FF']],
+  'magenta-light': [[0, '#D0D0D0'], [100, '#FF00FF']],
+  yellow: [[0, '#353536'], [100, '#FFFF00']],
+  'yellow-light': [[0, '#D0D0D0'], [100, '#FFFF00']],
 };
 
 function easeOutCubic(t) {
@@ -83,9 +96,11 @@ function setupSlider(item) {
   const swatchEl = item.querySelector('.color-swatch');
   const swatchKey = item.dataset.swatch;
 
+  const LIGHT_VARIANT_SWATCHES = ['saturation', 'tint', 'red', 'green', 'blue', 'cyan', 'magenta', 'yellow'];
+
   function colorStops() {
-    if (swatchKey === 'saturation' && document.documentElement.classList.contains('light-mode')) {
-      return COLOR_STOPS['saturation-light'];
+    if (LIGHT_VARIANT_SWATCHES.includes(swatchKey) && document.documentElement.classList.contains('light-mode')) {
+      return COLOR_STOPS[`${swatchKey}-light`];
     }
     return COLOR_STOPS[swatchKey];
   }
@@ -373,7 +388,7 @@ function setupSlider(item) {
     window.addEventListener('slider-colored-handle-change', update);
   }
 
-  if (swatchKey === 'saturation') {
+  if (LIGHT_VARIANT_SWATCHES.includes(swatchKey)) {
     const themeToggle = document.querySelector('.theme-toggle');
     if (themeToggle) themeToggle.addEventListener('click', update);
   }

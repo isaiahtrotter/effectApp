@@ -358,6 +358,57 @@ html.light-mode .shuffle-btn:hover {
   margin-top: 32px;
 }
 
+.slider-group {
+  margin: 0;
+}
+
+.slider-group + .slider-item {
+  margin-top: 32px;
+}
+
+.slider-group-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 2.5rem;
+  gap: 6px;
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+  font-family: 'Baikal Trial Variable', 'Baikal Trial Light', sans-serif;
+  font-variation-settings: 'wght' 420, 'wdth' 70, 'ital' 0;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.07rem;
+  color: var(--text-dim);
+  transition: color 150ms ease-out;
+}
+
+.slider-group-summary::-webkit-details-marker {
+  display: none;
+}
+
+.slider-group-summary:hover {
+  color: var(--text-color);
+}
+
+.slider-group-chevron {
+  transition: transform 150ms ease-out;
+}
+
+.slider-group[open] > .slider-group-summary .slider-group-chevron {
+  transform: rotate(180deg);
+}
+
+.slider-group-content {
+  padding-top: 24px;
+}
+
+.slider-group-content .slider-item:first-child {
+  margin-top: 0;
+}
+
 .row {
   display: flex;
   align-items: baseline;
@@ -616,9 +667,66 @@ html.light-mode .gradient-seg.saturation {
   background-image: linear-gradient(
     to right,
     #00FF00 0%,
+    #353536 50%,
+    #FF00FF 100%
+  );
+}
+
+html.light-mode .gradient-seg.tint {
+  background-image: linear-gradient(
+    to right,
+    #00FF00 0%,
     #FFFFFF 50%,
     #FF00FF 100%
   );
+}
+
+.gradient-seg.red {
+  background-image: linear-gradient(to right, #353536 0%, #FF0000 100%);
+}
+
+html.light-mode .gradient-seg.red {
+  background-image: linear-gradient(to right, #D0D0D0 0%, #FF0000 100%);
+}
+
+.gradient-seg.green {
+  background-image: linear-gradient(to right, #353536 0%, #00FF00 100%);
+}
+
+html.light-mode .gradient-seg.green {
+  background-image: linear-gradient(to right, #D0D0D0 0%, #00FF00 100%);
+}
+
+.gradient-seg.blue {
+  background-image: linear-gradient(to right, #353536 0%, #0000FF 100%);
+}
+
+html.light-mode .gradient-seg.blue {
+  background-image: linear-gradient(to right, #D0D0D0 0%, #0000FF 100%);
+}
+
+.gradient-seg.cyan {
+  background-image: linear-gradient(to right, #353536 0%, #00FFFF 100%);
+}
+
+html.light-mode .gradient-seg.cyan {
+  background-image: linear-gradient(to right, #D0D0D0 0%, #00FFFF 100%);
+}
+
+.gradient-seg.magenta {
+  background-image: linear-gradient(to right, #353536 0%, #FF00FF 100%);
+}
+
+html.light-mode .gradient-seg.magenta {
+  background-image: linear-gradient(to right, #D0D0D0 0%, #FF00FF 100%);
+}
+
+.gradient-seg.yellow {
+  background-image: linear-gradient(to right, #353536 0%, #FFFF00 100%);
+}
+
+html.light-mode .gradient-seg.yellow {
+  background-image: linear-gradient(to right, #D0D0D0 0%, #FFFF00 100%);
 }
 
 .thumb {

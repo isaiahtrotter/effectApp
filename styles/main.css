@@ -62,8 +62,7 @@ html.light-mode {
 }
 
 .track-wrap.hovered {
-  --gray-h: 4px;
-  --grad-h: 12px;
+  --grad-h: 16px;
   --thumb-h: 16px;
 }
 
@@ -603,7 +602,7 @@ html.light-mode .shuffle-btn:hover {
 
 .gradient-seg {
   position: absolute;
-  bottom: var(--gray-h);
+  bottom: 0;
   height: var(--grad-h);
   overflow: hidden;
   z-index: 2;

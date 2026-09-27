@@ -734,6 +734,27 @@ html.light-mode .gradient-seg.yellow {
   background-image: linear-gradient(to right, #D0D0D0 0%, #FFFF00 100%);
 }
 
+.strength-tri {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: var(--gray-h);
+  height: var(--grad-h);
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(to right, transparent, var(--handle-color));
+  clip-path: polygon(0% 100%, 100% 100%, 100% 0%);
+  transition:
+    opacity calc(var(--anim-ms) * 1ms) linear,
+    height calc(var(--anim-ms) * 1ms) linear,
+    bottom calc(var(--anim-ms) * 1ms) linear;
+}
+
+.track-wrap.hovered .strength-tri {
+  opacity: 1;
+}
+
 .thumb {
   position: absolute;
   bottom: 0;

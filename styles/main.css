@@ -897,7 +897,7 @@ html.light-mode .gradient-seg.yellow {
   height: 100%;
   border-radius: 7px; /* square's 8px radius minus its 1px border */
   background: color-mix(in srgb, var(--handle-color) 10%, transparent);
-  transition: width 75ms ease-out, height 75ms ease-out;
+  transition: width 100ms ease-out, height 100ms ease-out;
 }
 
 .crop-corner {
@@ -945,7 +945,7 @@ html.light-mode .gradient-seg.yellow {
 }
 
 .ratio-option.is-active {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 html.light-mode .ratio-option:hover {
@@ -953,7 +953,7 @@ html.light-mode .ratio-option:hover {
 }
 
 html.light-mode .ratio-option.is-active {
-  background: #DCDDDE;
+  background: rgba(0, 0, 0, 0.06);
 }
 
 .ratio-mini {
@@ -973,49 +973,100 @@ html.light-mode .ratio-option.is-active {
 .ratio-custom {
   position: relative;
   display: flex;
-  gap: 28px;
+  gap: 24px;
   margin-top: 8px;
+  transition: gap 100ms ease-out;
 }
 
-/* wire connecting the two fields while linked */
-.ratio-custom::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 28px;
-  height: 1px;
-  background: var(--text-dim);
-  transform: translate(-50%, -50%) scaleX(0);
-  transition: transform 100ms ease-out;
+/* Linked: the two fields mesh into one joined field (shared seam, squared inner corners). */
+.ratio-custom.is-linked {
+  gap: 0;
 }
 
-.ratio-custom.is-linked::before {
-  transform: translate(-50%, -50%) scaleX(1);
+.ratio-custom.is-linked .ratio-field:first-of-type {
+  border-radius: 8px 0 0 8px;
 }
 
-.ratio-custom.is-linked .ratio-field {
-  border-color: var(--text-dim);
+.ratio-custom.is-linked .ratio-field:first-of-type:not(:focus-within) {
+  border-right-color: transparent;
+}
+
+.ratio-custom.is-linked .ratio-field:last-of-type {
+  border-radius: 0 8px 8px 0;
+}
+
+.ratio-custom.is-linked .ratio-field:last-of-type:not(:focus-within) {
+  border-left-color: transparent;
+}
+
+/* Only H's left edge moves. Its label padding offsets the field's shift so the H text stays
+   at one fixed x (unlinked: field left 121 + border 1 + padding 10; linked: 109 + 1 + 22;
+   hover: 112 + 1 + 19). Same duration/easing as the gap (border widths stay 1px: browsers snap animated border widths to whole pixels, which jitters), so the sum never drifts. */
+.ratio-custom.is-linked .ratio-field:last-of-type .ratio-field-label {
+  padding-left: 22px;
+}
+
+.ratio-custom.is-linked:has(.ratio-link:hover) .ratio-field:last-of-type .ratio-field-label {
+  padding-left: 19px;
+}
+
+/* Hovering the link while unlinked: the fields come together some. H's label padding offsets the
+   field's shift (field left 116 + border 1 + padding 15) so the H text stays put. */
+.ratio-custom:not(.is-linked):has(.ratio-link:hover) {
+  gap: 14px;
+}
+
+.ratio-custom:not(.is-linked):has(.ratio-link:hover) .ratio-field:last-of-type .ratio-field-label {
+  padding-left: 15px;
+}
+
+/* Hovering the link while linked: the fields pull apart a little. */
+.ratio-custom.is-linked:has(.ratio-link:hover) {
+  gap: 6px;
+}
+
+.ratio-custom.is-linked:has(.ratio-link:hover) .ratio-field:first-of-type {
+  border-radius: 8px 4px 4px 8px;
+  border-right-color: var(--field-border);
+}
+
+.ratio-custom.is-linked:has(.ratio-link:hover) .ratio-field:last-of-type {
+  border-radius: 4px 8px 8px 4px;
+  border-left-color: var(--field-border);
 }
 
 .ratio-link {
   position: absolute;
   top: 50%;
   left: 50%;
-  z-index: 1;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 24px; /* unlinked: halves sit apart (even widths keep the centered pill on whole pixels) */
+  height: 14px; /* glyph is 8px tall: exactly 3px of padding above and below */
   padding: 0;
   border: none;
-  border-radius: 50%;
+  border-radius: 999px;
   background: var(--card-bg);
   color: var(--text-dim);
   cursor: pointer;
   transform: translate(-50%, -50%);
-  transition: color 100ms ease-out;
+  transition: color 100ms ease-out, width 100ms ease-out;
+}
+
+/* Absolutely centered (not a flex item): buttons start-align overflowing content, which
+   shifted the glyph off-center and made it jump while the pill width animated. */
+.ratio-link svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  overflow: visible;
+}
+
+.ratio-link.is-linked {
+  width: 18px; /* linked: glyph is 12px wide, so exactly 3px of padding left and right, same as top and bottom */
 }
 
 .ratio-link:hover,
@@ -1027,8 +1078,8 @@ html.light-mode .ratio-option.is-active {
   transition: transform 100ms ease-out;
 }
 
-.link-left { transform: translateX(-2.5px); }
-.link-right { transform: translateX(2.5px); }
+.link-left { transform: translateX(-3px); }
+.link-right { transform: translateX(3px); }
 
 .ratio-link.is-linked .link-half {
   transform: translateX(0);
@@ -1049,26 +1100,35 @@ html.light-mode .ratio-option.is-active {
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0;
   height: 32px;
-  padding: 0 10px;
-  border: 1px solid var(--border);
+  padding: 0;
+  --field-border: transparent; /* borders show only while a field is focused */
+  border: 1px solid var(--field-border);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.06); /* same tint as the option hover */
   color: var(--text-color);
   cursor: text;
-  transition: border-color 200ms ease-out, background-color 200ms ease-out;
+  transition: border-color 100ms ease-out, background-color 200ms ease-out,
+    border-radius 100ms ease-out;
 }
 
 html.light-mode .ratio-field {
-  background: rgba(0, 0, 0, 0.03);
+  background: rgba(0, 0, 0, 0.06);
 }
 
 .ratio-field:focus-within {
-  border-color: var(--text-dim);
+  position: relative;
+  z-index: 1;
+  --field-border: var(--text-dim); /* full border all the way around, in both themes */
 }
 
 .ratio-field-label {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  padding: 0 8px 0 10px;
+  transition: padding-left 100ms ease-out;
   cursor: ew-resize;
   touch-action: none;
   font-family: 'CommitMono', monospace;
@@ -1081,5 +1141,7 @@ html.light-mode .ratio-field {
   flex: 1;
   min-width: 0;
   width: 100%;
+  height: 100%;
+  padding-right: 10px;
   text-align: left;
 }

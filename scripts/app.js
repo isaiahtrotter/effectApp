@@ -330,16 +330,22 @@ if (ratioCard) {
 
   // `source` is the input that changed (or the input event itself); when linked,
   // the other dimension follows so the ratio stays constant.
+  // Assigning `.value` (even to the same text) can reset the caret/selection, so only write on change.
+  function setValue(el, v) {
+    const str = String(v);
+    if (el.value !== str) el.value = str;
+  }
+
   function onCustomInput(source) {
     const src = source && source.target ? source.target : source;
-    wInput.value = wInput.value.replace(/\D/g, '');
-    hInput.value = hInput.value.replace(/\D/g, '');
+    setValue(wInput, wInput.value.replace(/\D/g, ''));
+    setValue(hInput, hInput.value.replace(/\D/g, ''));
     if (linked && src) {
       const max = 10 ** src.maxLength - 1;
       if (src === wInput && Number(wInput.value)) {
-        hInput.value = Math.min(max, Math.max(1, Math.round(Number(wInput.value) / linkedRatio)));
+        setValue(hInput, Math.min(max, Math.max(1, Math.round(Number(wInput.value) / linkedRatio))));
       } else if (src === hInput && Number(hInput.value)) {
-        wInput.value = Math.min(max, Math.max(1, Math.round(Number(hInput.value) * linkedRatio)));
+        setValue(wInput, Math.min(max, Math.max(1, Math.round(Number(hInput.value) * linkedRatio))));
       }
     }
     const w = Number(wInput.value);
@@ -354,9 +360,11 @@ if (ratioCard) {
     const label = input.closest('.ratio-field').querySelector('.ratio-field-label');
     let startX = 0;
     let startVal = 0;
+    let moved = false;
 
     label.addEventListener('pointerdown', (e) => {
       e.preventDefault();
+      moved = false;
       startX = e.clientX;
       startVal = Number(input.value) || 1;
       label.setPointerCapture(e.pointerId);
@@ -364,46 +372,25 @@ if (ratioCard) {
 
     label.addEventListener('pointermove', (e) => {
       if (!label.hasPointerCapture(e.pointerId)) return;
+      if (Math.abs(e.clientX - startX) > 2) moved = true;
+      if (!moved) return;
       const step = e.shiftKey ? 10 : 1;
       const max = 10 ** input.maxLength - 1;
       const next = Math.min(max, Math.max(1, startVal + Math.round((e.clientX - startX) * step)));
       input.value = next;
       onCustomInput(input);
     });
+
+    label.addEventListener('pointerup', () => {
+      if (!moved) input.focus(); // plain click on the label behaves like clicking the number
+    });
   });
 
-  // Same click-in behavior as the slider values: select everything on focus / click,
-  // Enter commits, Up/Down nudge (Shift = 10), and blur clamps or restores the last valid value.
+  // Plain inputs (no select-all on click or focus): Enter commits, Up/Down nudge (Shift = 10), and blur clamps or restores the last valid value.
   [wInput, hInput].forEach((input) => {
     const max = 10 ** input.maxLength - 1;
-    let mouseInteraction = false;
     let lastValid = Number(input.value);
 
-    const field = input.closest('.ratio-field');
-    const scrubLabel = field.querySelector('.ratio-field-label');
-
-    // Any mouse press in the field counts as a mouse interaction; focusing from the
-    // padding is done manually so the label's own click-to-focus can't select all early.
-    field.addEventListener('mousedown', (e) => {
-      if (e.target === scrubLabel) return;
-      mouseInteraction = true;
-      if (e.target !== input) {
-        e.preventDefault();
-        input.focus();
-      }
-    });
-    input.addEventListener('focus', () => {
-      if (!mouseInteraction) input.select();
-    });
-    // Listen on the document so a drag-select that ends outside the field still resolves.
-    // Select everything on mouse up only if nothing is selected; otherwise keep the selection.
-    document.addEventListener('mouseup', () => {
-      if (!mouseInteraction) return;
-      mouseInteraction = false;
-      if (document.activeElement === input && input.selectionStart === input.selectionEnd) {
-        input.select();
-      }
-    });
     input.addEventListener('input', () => {
       if (Number(input.value)) lastValid = Number(input.value);
     });

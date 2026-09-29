@@ -379,13 +379,30 @@ if (ratioCard) {
     let mouseInteraction = false;
     let lastValid = Number(input.value);
 
-    input.addEventListener('mousedown', () => { mouseInteraction = true; });
+    const field = input.closest('.ratio-field');
+    const scrubLabel = field.querySelector('.ratio-field-label');
+
+    // Any mouse press in the field counts as a mouse interaction; focusing from the
+    // padding is done manually so the label's own click-to-focus can't select all early.
+    field.addEventListener('mousedown', (e) => {
+      if (e.target === scrubLabel) return;
+      mouseInteraction = true;
+      if (e.target !== input) {
+        e.preventDefault();
+        input.focus();
+      }
+    });
     input.addEventListener('focus', () => {
       if (!mouseInteraction) input.select();
     });
-    input.addEventListener('mouseup', () => {
-      if (input.selectionStart === input.selectionEnd) input.select();
+    // Listen on the document so a drag-select that ends outside the field still resolves.
+    // Select everything on mouse up only if nothing is selected; otherwise keep the selection.
+    document.addEventListener('mouseup', () => {
+      if (!mouseInteraction) return;
       mouseInteraction = false;
+      if (document.activeElement === input && input.selectionStart === input.selectionEnd) {
+        input.select();
+      }
     });
     input.addEventListener('input', () => {
       if (Number(input.value)) lastValid = Number(input.value);

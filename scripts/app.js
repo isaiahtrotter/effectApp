@@ -209,6 +209,68 @@ if (freqWaveItem) {
   updateFreqWave();
 }
 
+const freqWaveTrackItem = document.querySelector('[data-freq-wave-track]');
+if (freqWaveTrackItem) {
+  const trackInput = freqWaveTrackItem.querySelector('.range-input');
+  const trackWrap = freqWaveTrackItem.querySelector('.track-wrap');
+  const waveClip = freqWaveTrackItem.querySelector('.freq-wave-track-clip');
+  const waveSvg = freqWaveTrackItem.querySelector('.freq-wave-track');
+  const wavePath = waveSvg.querySelector('path');
+
+  const TRACK_WAVE_MIN_PERIOD_PX = 8;
+  const TRACK_WAVE_MAX_PERIOD_PX = 40;
+  const TRACK_WAVE_HEIGHT = 14;
+  const TRACK_WAVE_AMPLITUDE = 5;
+  const TRACK_WAVE_MID = TRACK_WAVE_HEIGHT / 2;
+  const TRACK_WAVE_SAMPLES_PER_CYCLE = 16;
+
+  function trackPct() {
+    const min = parseFloat(trackInput.min);
+    const max = parseFloat(trackInput.max);
+    const val = parseFloat(trackInput.value);
+    return ((val - min) / (max - min)) * 100;
+  }
+
+  // Samples x/period directly (rather than fitting a rounded number of whole
+  // cycles into the width), so the pattern never snaps as the period changes
+  // continuously — only its density does.
+  function buildTrackWavePath(widthPx, periodPx) {
+    const samples = Math.max(64, Math.ceil((widthPx / TRACK_WAVE_MIN_PERIOD_PX) * TRACK_WAVE_SAMPLES_PER_CYCLE));
+    let d = '';
+    for (let i = 0; i <= samples; i++) {
+      const x = (widthPx * i) / samples;
+      const y = TRACK_WAVE_MID - TRACK_WAVE_AMPLITUDE * Math.sin((2 * Math.PI * x) / periodPx);
+      d += (i === 0 ? 'M' : 'L') + x.toFixed(2) + ',' + y.toFixed(2) + ' ';
+    }
+    return d.trim();
+  }
+
+  let trackWaveFrame = null;
+
+  function renderTrackWave() {
+    trackWaveFrame = null;
+    const widthPx = trackWrap.getBoundingClientRect().width;
+    const pct = trackPct();
+    const periodPx = TRACK_WAVE_MAX_PERIOD_PX - (pct / 100) * (TRACK_WAVE_MAX_PERIOD_PX - TRACK_WAVE_MIN_PERIOD_PX);
+
+    waveSvg.setAttribute('viewBox', `0 0 ${widthPx} ${TRACK_WAVE_HEIGHT}`);
+    waveSvg.style.width = widthPx + 'px';
+    wavePath.setAttribute('d', buildTrackWavePath(widthPx, periodPx));
+    waveClip.style.width = pct + '%';
+  }
+
+  // Coalesces the many 'input' events a drag fires into one redraw per frame.
+  function updateTrackWave() {
+    if (trackWaveFrame !== null) return;
+    trackWaveFrame = requestAnimationFrame(renderTrackWave);
+  }
+
+  trackInput.addEventListener('input', updateTrackWave);
+  window.addEventListener('resize', updateTrackWave);
+
+  renderTrackWave();
+}
+
 document.querySelectorAll('.nav-item').forEach((btn) => {
   btn.addEventListener('click', () => {
     const target = btn.dataset.target;

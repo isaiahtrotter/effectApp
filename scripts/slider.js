@@ -400,6 +400,7 @@ function setupSlider(item) {
   }
 
   const isBlur = item.hasAttribute('data-blur');
+  const blurTarget = isBlur ? item.querySelector('.gray-fill.before') : null;
 
   if (isBlur) {
     function applyBlur() {
@@ -410,13 +411,13 @@ function setupSlider(item) {
       const min = parseFloat(input.min);
       const max = parseFloat(input.max);
       const pct = (parseFloat(input.value) - min) / (max - min);
-      item.style.filter = `blur(${(pct * FULL_BLUR_PX * BLUR_CAP).toFixed(2)}px)`;
+      blurTarget.style.filter = `blur(${(pct * FULL_BLUR_PX * BLUR_CAP).toFixed(2)}px)`;
     }
 
     input.addEventListener('input', applyBlur);
 
     window.addEventListener('pointerup', () => {
-      item.style.filter = 'blur(0px)';
+      blurTarget.style.filter = 'blur(0px)';
     });
   }
 
@@ -437,7 +438,7 @@ function setupSlider(item) {
       if (!item.matches(':hover')) itemHovered = false;
       if (!wrap.matches(':hover')) wrap.classList.remove('hovered');
       update();
-      if (isBlur) item.style.filter = 'blur(0px)';
+      if (isBlur) blurTarget.style.filter = 'blur(0px)';
     }, duration);
   }
 

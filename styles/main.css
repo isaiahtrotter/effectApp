@@ -361,7 +361,7 @@ html.light-mode .shuffle-btn:hover {
   margin: 0;
 }
 
-.slider-item[data-blur] {
+.slider-item[data-blur] .gray-fill.before {
   filter: blur(0px);
   transition: filter 100ms ease-out;
 }
@@ -770,6 +770,32 @@ html.light-mode .gradient-seg.yellow {
 
 .track-wrap.hovered .thumb {
   background: var(--handle-color);
+}
+
+.freq-wave-track-clip {
+  position: absolute;
+  left: 0;
+  bottom: var(--gray-h);
+  height: 12px;
+  overflow: hidden;
+  z-index: 2;
+  pointer-events: none;
+  width: 0%;
+  opacity: 0;
+  transition: opacity 150ms ease-out;
+}
+
+.slider-item:hover .freq-wave-track-clip,
+.slider-item.is-dragging .freq-wave-track-clip {
+  opacity: 1;
+}
+
+.freq-wave-track {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  color: var(--gray-near);
 }
 
 .range-input {

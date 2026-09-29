@@ -281,5 +281,139 @@ document.querySelectorAll('.nav-item').forEach((btn) => {
     document.querySelectorAll('[data-panel]').forEach((panel) => {
       panel.hidden = panel.id !== target;
     });
+    window.dispatchEvent(new Event('resize'));
   });
 });
+
+const ratioCard = document.querySelector('[data-aspect-ratio]');
+if (ratioCard) {
+  const previewRect = ratioCard.querySelector('.ratio-preview-rect');
+  const options = Array.from(ratioCard.querySelectorAll('.ratio-option'));
+  const wInput = ratioCard.querySelector('.ratio-w');
+  const hInput = ratioCard.querySelector('.ratio-h');
+  const PREVIEW_FILL = 100; // % of the square the longest side occupies
+  const MINI_SIZE = 14; // px
+
+  function fit(w, h, max, unit) {
+    const long = Math.max(w, h);
+    return [(w / long) * max + unit, (h / long) * max + unit];
+  }
+
+  function applyRatio(w, h) {
+    [previewRect.style.width, previewRect.style.height] = fit(w, h, PREVIEW_FILL, '%');
+  }
+
+  options.forEach((opt) => {
+    const rect = opt.querySelector('.ratio-mini-rect');
+    const w = Number(opt.dataset.w);
+    const h = Number(opt.dataset.h);
+    [rect.style.width, rect.style.height] = fit(w, h, MINI_SIZE, 'px');
+
+    opt.addEventListener('click', () => {
+      options.forEach((o) => o.classList.toggle('is-active', o === opt));
+      applyRatio(w, h);
+    });
+  });
+
+  const customRow = ratioCard.querySelector('.ratio-custom');
+  const linkBtn = ratioCard.querySelector('.ratio-link');
+  let linked = true;
+  let linkedRatio = Number(wInput.value) / Number(hInput.value);
+
+  linkBtn.addEventListener('click', () => {
+    linked = !linked;
+    if (linked) linkedRatio = (Number(wInput.value) || 1) / (Number(hInput.value) || 1);
+    linkBtn.classList.toggle('is-linked', linked);
+    customRow.classList.toggle('is-linked', linked);
+    linkBtn.setAttribute('aria-pressed', String(linked));
+  });
+
+  // `source` is the input that changed (or the input event itself); when linked,
+  // the other dimension follows so the ratio stays constant.
+  function onCustomInput(source) {
+    const src = source && source.target ? source.target : source;
+    wInput.value = wInput.value.replace(/\D/g, '');
+    hInput.value = hInput.value.replace(/\D/g, '');
+    if (linked && src) {
+      const max = 10 ** src.maxLength - 1;
+      if (src === wInput && Number(wInput.value)) {
+        hInput.value = Math.min(max, Math.max(1, Math.round(Number(wInput.value) / linkedRatio)));
+      } else if (src === hInput && Number(hInput.value)) {
+        wInput.value = Math.min(max, Math.max(1, Math.round(Number(hInput.value) * linkedRatio)));
+      }
+    }
+    const w = Number(wInput.value);
+    const h = Number(hInput.value);
+    if (!w || !h) return;
+    options.forEach((o) => o.classList.remove('is-active'));
+    applyRatio(w, h);
+  }
+
+  // Dragging the W / H label horizontally scrubs its value (1px = 1 unit, hold Shift for 10).
+  [[wInput, 'W'], [hInput, 'H']].forEach(([input]) => {
+    const label = input.closest('.ratio-field').querySelector('.ratio-field-label');
+    let startX = 0;
+    let startVal = 0;
+
+    label.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      startX = e.clientX;
+      startVal = Number(input.value) || 1;
+      label.setPointerCapture(e.pointerId);
+    });
+
+    label.addEventListener('pointermove', (e) => {
+      if (!label.hasPointerCapture(e.pointerId)) return;
+      const step = e.shiftKey ? 10 : 1;
+      const max = 10 ** input.maxLength - 1;
+      const next = Math.min(max, Math.max(1, startVal + Math.round((e.clientX - startX) * step)));
+      input.value = next;
+      onCustomInput(input);
+    });
+  });
+
+  // Same click-in behavior as the slider values: select everything on focus / click,
+  // Enter commits, Up/Down nudge (Shift = 10), and blur clamps or restores the last valid value.
+  [wInput, hInput].forEach((input) => {
+    const max = 10 ** input.maxLength - 1;
+    let mouseInteraction = false;
+    let lastValid = Number(input.value);
+
+    input.addEventListener('mousedown', () => { mouseInteraction = true; });
+    input.addEventListener('focus', () => {
+      if (!mouseInteraction) input.select();
+    });
+    input.addEventListener('mouseup', () => {
+      if (input.selectionStart === input.selectionEnd) input.select();
+      mouseInteraction = false;
+    });
+    input.addEventListener('input', () => {
+      if (Number(input.value)) lastValid = Number(input.value);
+    });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        input.blur();
+        return;
+      }
+      if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+      e.preventDefault();
+      const delta = (e.shiftKey ? 10 : 1) * (e.key === 'ArrowUp' ? 1 : -1);
+      const v = Math.min(max, Math.max(1, (Number(input.value) || lastValid) + delta));
+      input.value = v;
+      lastValid = v;
+      onCustomInput(input);
+      input.select();
+    });
+    input.addEventListener('blur', () => {
+      const v = Math.min(max, Math.max(1, Number(input.value) || lastValid));
+      input.value = v;
+      lastValid = v;
+      onCustomInput();
+    });
+  });
+
+  wInput.addEventListener('input', onCustomInput);
+  hInput.addEventListener('input', onCustomInput);
+
+  applyRatio(1, 1);
+}

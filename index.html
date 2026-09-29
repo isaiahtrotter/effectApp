@@ -29,13 +29,14 @@
       </div>
       <nav class="sidebar-nav">
         <div class="nav-group">
-          <button class="nav-item is-active" data-target="sliders">Sliders</button>
+          <button class="nav-item" data-target="sliders">Sliders</button>
+          <button class="nav-item is-active" data-target="aspect-ratio">Aspect ratio</button>
         </div>
       </nav>
     </aside>
 
     <main class="content">
-      <section class="panel" id="sliders" data-panel>
+      <section class="panel" id="sliders" data-panel hidden>
         <div class="slider-card v2-mode">
           <div class="resize-handle resize-handle-right"></div>
 
@@ -749,6 +750,41 @@
                 value="25"
               />
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel panel-centered" id="aspect-ratio" data-panel>
+        <div class="ratio-card" data-aspect-ratio>
+          <h1 class="ratio-title">Aspect ratio</h1>
+
+          <div class="ratio-preview"><div class="ratio-preview-rect"><i class="crop-corner tl"></i><i class="crop-corner tr"></i><i class="crop-corner bl"></i><i class="crop-corner br"></i></div></div>
+
+          <div class="ratio-options">
+            <div class="ratio-col">
+              <button class="ratio-option is-active" type="button" data-w="1" data-h="1"><span class="ratio-mini"><span class="ratio-mini-rect"></span></span><span class="label">1:1</span></button>
+              <button class="ratio-option" type="button" data-w="4" data-h="3"><span class="ratio-mini"><span class="ratio-mini-rect"></span></span><span class="label">4:3</span></button>
+              <button class="ratio-option" type="button" data-w="3" data-h="2"><span class="ratio-mini"><span class="ratio-mini-rect"></span></span><span class="label">3:2</span></button>
+              <button class="ratio-option" type="button" data-w="16" data-h="9"><span class="ratio-mini"><span class="ratio-mini-rect"></span></span><span class="label">16:9</span></button>
+            </div>
+            <div class="ratio-col">
+              <button class="ratio-option" type="button" data-w="4" data-h="5"><span class="ratio-mini"><span class="ratio-mini-rect"></span></span><span class="label">4:5</span></button>
+              <button class="ratio-option" type="button" data-w="3" data-h="4"><span class="ratio-mini"><span class="ratio-mini-rect"></span></span><span class="label">3:4</span></button>
+              <button class="ratio-option" type="button" data-w="2" data-h="3"><span class="ratio-mini"><span class="ratio-mini-rect"></span></span><span class="label">2:3</span></button>
+              <button class="ratio-option" type="button" data-w="9" data-h="16"><span class="ratio-mini"><span class="ratio-mini-rect"></span></span><span class="label">9:16</span></button>
+            </div>
+          </div>
+
+          <div class="ratio-custom is-linked">
+            <label class="ratio-field"><span class="ratio-field-label">W</span><input class="value-num ratio-w" type="text" inputmode="numeric" value="800" maxlength="5" aria-label="Width" /></label>
+            <button class="ratio-link is-linked" type="button" aria-pressed="true" aria-label="Link width and height">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path class="link-half link-left" d="M8.5 5H5.5a3 3 0 0 0 0 6H8.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>
+                <path class="link-half link-right" d="M7.5 5H10.5a3 3 0 0 1 0 6H7.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>
+                <line class="link-bar" x1="6" y1="8" x2="10" y2="8" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>
+              </svg>
+            </button>
+            <label class="ratio-field"><span class="ratio-field-label">H</span><input class="value-num ratio-h" type="text" inputmode="numeric" value="1000" maxlength="5" aria-label="Height" /></label>
           </div>
         </div>
       </section>

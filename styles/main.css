@@ -1727,7 +1727,7 @@ html.light-mode .tl-group-name { color: #000000; }
 .tl-menu {
   position: fixed;
   z-index: 1000;
-  min-width: 190px;
+  min-width: 220px;
   padding: 6px;
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -1797,3 +1797,22 @@ html.light-mode .tl-track-row.is-muted { --bar: #B4B4B9; }
 .tl-tick-label { transition: color 150ms ease-out; }
 .tl-btn, .tl-btn svg { transition: background-color 150ms ease-out, color 150ms ease-out; }
 .tl-zoom, .tl-zoom-thumb { transition: background-color 150ms ease-out; }
+
+/* too narrow for its easing icon: hide the icon so it can never sit on the handles */
+.tl-clip.is-narrow .tl-curve,
+.tl-clip.is-narrow .tl-curve-line { display: none; }
+
+/* the right-click menu reuses the Sliders panel's slider; just space it for the menu */
+.tl-menu-sliders { padding: 4px 8px 8px; }
+.tl-menu-sliders .slider-item + .slider-item { margin-top: 12px; }
+.tl-menu .row { gap: 12px; }
+
+/* marquee selection box */
+.tl-marquee {
+  position: fixed;
+  z-index: 900;
+  border: 1px solid color-mix(in srgb, var(--text-color) 55%, transparent);
+  background: color-mix(in srgb, var(--text-color) 10%, transparent);
+  border-radius: 2px;
+  pointer-events: none;
+}

@@ -273,7 +273,9 @@ function setupSlider(item) {
       overshoot = e.clientX - trackRect.right;
       dir = 1;
     }
-    const pull = (elasticityEnabled && overshoot > 0) ? rubberBand(overshoot) : 0;
+    // a slider can opt out of the spring with data-no-elastic (the timeline's right-click menu does)
+    const springy = elasticityEnabled && !item.hasAttribute('data-no-elastic');
+    const pull = (springy && overshoot > 0) ? rubberBand(overshoot) : 0;
     applyStretch(pull, dir, false);
   }
 

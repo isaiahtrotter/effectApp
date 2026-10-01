@@ -13,6 +13,9 @@
   let duration = 5;     // seconds, editable
   const SUBDIV = 5;     // intervals per half second, i.e. 4 ticks between labels
   const MIN_LEN = 0.1;  // seconds
+  // A track with an easing icon needs room for both 8px-wide handle zones (4px inset + 4px handle),
+  // the 16px icon and a 2px gap on each side: 8 + 2 + 16 + 2 + 8.
+  const CURVE_MIN_PX = 36;
   const SNAP = 1 / FPS;
   const SNAP_PX = 6;    // magnet distance to other clip edges / the playhead
 
@@ -26,6 +29,19 @@
   const CURVE_ORDER = ['inout', 'in', 'out']; // linear is the default, so it isn't offered
   const curveSvg = (name, size = 10) =>
     `<svg width="${size}" height="${size}" viewBox="0 0 10 10" fill="none"><path d="${CURVES[name]}" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>`;
+
+  // Every track animates its setting from one value to another (defaults 0 -> 100). The right-click
+  // menu edits both with sliders.
+  const VALUE_MIN = 0;
+  const VALUE_MAX = 100;
+  const fromOf = (c) => (c.from == null ? VALUE_MIN : c.from);
+  const toOf = (c) => (c.to == null ? VALUE_MAX : c.to);
+  const EASE_FN = {
+    linear: (u) => u,
+    in: (u) => u * u,
+    out: (u) => 1 - (1 - u) * (1 - u),
+    inout: (u) => u * u * (3 - 2 * u),
+  };
 
   const GROUPS = [
     { name: 'Elastic grid', bar: '#7B35B5', rows: [
@@ -86,7 +102,8 @@
   // ---------- state ----------
   const entries = []; // one per setting row: { row, rowEl, labEl, removed, group }
   const groupEntries = []; // one per section: { side, main, removed }
-  let selected = null; // { clip, node, entry }
+  let selected = null; // the most recently selected track: { clip, node, entry }
+  let multi = [];      // every selected track (selected is the last of these)
   let time = 9 / FPS;
 
   // the first section that's still showing gets the top spacing (a plain :first-child would still
@@ -190,18 +207,27 @@
   buildRuler();
 
   // ---------- clips ----------
-  function select(sel) {
-    if (selected) selected.node.classList.remove('is-selected');
-    selected = sel;
-    if (selected) selected.node.classList.add('is-selected');
+  function setSelection(list) {
+    multi.forEach((m) => m.node.classList.remove('is-selected'));
+    multi = list;
+    selected = list.length ? list[list.length - 1] : null;
+    multi.forEach((m) => m.node.classList.add('is-selected'));
     updateEaseButtons();
+  }
+  function select(sel) { setSelection(sel ? [sel] : []); }
+
+  // the easing shared by every selected track: a name, null (none set), or undefined (they differ)
+  function commonCurve() {
+    if (!multi.length) return undefined;
+    const first = multi[0].clip.curve || null;
+    return multi.every((m) => (m.clip.curve || null) === first) ? first : undefined;
   }
 
   // ---------- easing buttons (toolbar) ----------
   const easeBtns = Array.from(root.querySelectorAll('[data-ease]'));
 
   function updateEaseButtons() {
-    const current = selected ? (selected.clip.curve || null) : null; // no easing set = nothing highlighted
+    const current = commonCurve() || null; // no easing set (or a mix) = nothing highlighted
     easeBtns.forEach((b) => {
       b.disabled = !selected;
       b.classList.toggle('is-active', b.dataset.ease === current);
@@ -211,24 +237,25 @@
 
   // name = easing to set, or null to remove it from the selected track
   function applyEase(name) {
-    if (!selected) return;
+    if (!multi.length) return;
     const before = snapshot();
-    const { clip, node } = selected;
-    if (!name) {
-      delete clip.curve;
-      node.querySelectorAll('.tl-curve-line, .tl-curve').forEach((n) => n.remove());
-    } else {
-      clip.curve = name;
-      renderCurve(clip, node);
-    }
+    multi.forEach(({ clip, node }) => {
+      if (!name) {
+        delete clip.curve;
+        node.querySelectorAll('.tl-curve-line, .tl-curve').forEach((n) => n.remove());
+      } else {
+        clip.curve = name;
+        renderCurve(clip, node);
+      }
+    });
     updateEaseButtons();
     commit(before);
   }
 
   // clicking an easing sets it; clicking the one that's already active removes it from the track
   function setEase(name) {
-    if (!selected) return;
-    applyEase(selected.clip.curve === name ? null : name);
+    if (!multi.length) return;
+    applyEase(commonCurve() === name ? null : name);
   }
 
   easeBtns.forEach((b) => {
@@ -241,6 +268,8 @@
     // rows start at the timeline origin (the band's 4px padding)
     node.style.left = clip.s * pps + 'px';
     node.style.width = (clip.e - clip.s) * pps + 'px';
+    // zoomed out, or split, a track can end up too narrow for its icon: hide the icon rather than overlap the handles
+    node.classList.toggle('is-narrow', !!clip.curve && (clip.e - clip.s) * pps < CURVE_MIN_PX - 0.5);
     if (clip.mid != null) node.querySelector('.tl-key').style.left = clip.mid * 100 + '%';
   }
 
@@ -270,10 +299,10 @@
   }
 
   // neighbours bound how far a clip can move without overlapping
-  function bounds(row, clip) {
+  function bounds(row, clip, skip) {
     let lo = 0, hi = duration;
     row.clips.forEach((c) => {
-      if (c === clip) return;
+      if (c === clip || (skip && skip.has(c))) return;
       if (c.e <= clip.s + 1e-6) lo = Math.max(lo, c.e);
       else if (c.s >= clip.e - 1e-6) hi = Math.min(hi, c.s);
     });
@@ -284,7 +313,7 @@
   function snapPoints(except) {
     const pts = [0, duration, time];
     visibleEntries().forEach((en) => en.row.clips.forEach((c) => {
-      if (c !== except) pts.push(c.s, c.e);
+      if (c !== except && !(except instanceof Set && except.has(c))) pts.push(c.s, c.e);
     }));
     return pts;
   }
@@ -304,17 +333,39 @@
     if (e.button !== 0) return;
     e.preventDefault();
     e.stopPropagation();
-    select({ clip, node, entry });
+
+    // Shift / Cmd / Ctrl + click adds a track to the selection or takes it out again
+    if (mode === 'move' && (e.shiftKey || e.metaKey || e.ctrlKey)) {
+      const me = multi.find((m) => m.clip === clip);
+      setSelection(me ? multi.filter((m) => m !== me) : [...multi, { clip, node, entry }]);
+      return;
+    }
+
+    // pressing a track that's part of a multi-selection drags the whole selection
+    const group = mode === 'move' && multi.length > 1 && multi.some((m) => m.clip === clip) ? multi.slice() : null;
+    if (!group) select({ clip, node, entry });
     node.setPointerCapture(e.pointerId);
     node.classList.add('is-dragging');
 
     const before = snapshot();
     const startX = e.clientX;
+    // shortest the track may get: with an easing icon it needs room for the icon between the handles
+    const need = clip.curve ? Math.max(MIN_LEN, CURVE_MIN_PX / pps) : MIN_LEN;
     const onCurveIcon = !!e.target.closest('.tl-curve'); // pressed on the easing icon in the middle
     let moved = false;
     const s0 = clip.s, e0 = clip.e, m0 = clip.mid;
-    const [lo, hi] = bounds(entry.row, clip);
-    const pts = snapPoints(clip);
+    const selectedClips = group ? new Set(group.map((m) => m.clip)) : null;
+    const [lo, hi] = bounds(entry.row, clip, selectedClips);
+    const pts = snapPoints(group ? selectedClips : clip);
+
+    // group move: how far the whole group may travel before any member hits a neighbour or an end
+    let dmin = -Infinity, dmax = Infinity;
+    const starts = group ? group.map((m) => {
+      const [l, h] = bounds(m.entry.row, m.clip, selectedClips);
+      dmin = Math.max(dmin, l - m.clip.s);
+      dmax = Math.min(dmax, h - m.clip.e);
+      return { m, s: m.clip.s, e: m.clip.e };
+    }) : null;
 
     const move = (ev) => {
       if (ev.buttons === 0) { up(); return; } // released out of sight: end the drag
@@ -327,13 +378,22 @@
         const a = snapTo(s, pts, free);
         const b = snapTo(s + len, pts, free) - len;
         s = Math.abs(a - s) <= Math.abs(b - s) ? a : b;
+        if (group) {
+          const delta = clamp(s - s0, dmin, dmax);
+          starts.forEach(({ m, s: ms, e: me }) => {
+            m.clip.s = ms + delta;
+            m.clip.e = me + delta;
+            layoutClip(m.clip, m.node);
+          });
+          return;
+        }
         s = clamp(s, lo, hi - len);
         clip.s = s;
         clip.e = s + len;
       } else if (mode === 'l') {
-        clip.s = clamp(snapTo(s0 + dt, pts, free), lo, e0 - MIN_LEN);
+        clip.s = clamp(snapTo(s0 + dt, pts, free), lo, Math.max(lo, e0 - need));
       } else if (mode === 'r') {
-        clip.e = clamp(snapTo(e0 + dt, pts, free), s0 + MIN_LEN, hi);
+        clip.e = clamp(snapTo(e0 + dt, pts, free), Math.min(hi, s0 + need), hi);
       } else if (mode === 'key') {
         const abs = (m0 * (e0 - s0) + s0) + dt;
         clip.mid = clamp((abs - clip.s) / (clip.e - clip.s), 0.05, 0.95);
@@ -345,9 +405,10 @@
       node.removeEventListener('pointermove', move);
       node.removeEventListener('pointerup', up);
       node.removeEventListener('pointercancel', up);
-      if (onCurveIcon && !moved && mode === 'move') cycleEase(clip, node); // a plain click on the icon changes the easing
+      if (onCurveIcon && !moved && mode === 'move' && !group) cycleEase(clip, node); // a plain click on the icon changes the easing
       commit(before);
-      if (moved) select(null); // letting go after dragging or resizing a track deselects it
+      if (moved) select(null);                              // letting go after dragging or resizing deselects
+      else if (group) select({ clip, node, entry });        // a plain click on one of several selected tracks keeps just that one
     };
     node.addEventListener('pointermove', move);
     node.addEventListener('pointerup', up);
@@ -402,7 +463,7 @@
   // Deleting a setting row: hides its label and track row; if it was the last row in its section,
   // the whole section goes too. (Hidden, not removed, so undo can bring everything back.)
   function removeRow(entry) {
-    if (selected && selected.entry === entry) select(null);
+    if (multi.some((m) => m.entry === entry)) select(null);
     entry.removed = true;
     entry.labEl.hidden = true;
     entry.rowEl.hidden = true;
@@ -416,32 +477,43 @@
   }
 
   function deleteSelected() {
-    if (!selected) return;
+    if (!multi.length) return;
     const before = snapshot();
-    const { clip, entry } = selected;
-    entry.row.clips.splice(entry.row.clips.indexOf(clip), 1);
-    selected = null;
-    rebuildRow(entry);
-    // that was the last track in its row: remove the row (and its section, if it was the last row)
-    if (entry.row.clips.length === 0) removeRow(entry);
+    const touched = new Set();
+    multi.forEach(({ clip, entry }) => {
+      entry.row.clips.splice(entry.row.clips.indexOf(clip), 1);
+      touched.add(entry);
+    });
+    setSelection([]);
+    touched.forEach((entry) => {
+      rebuildRow(entry);
+      // that was the last track in its row: remove the row (and its section, if it was the last row)
+      if (entry.row.clips.length === 0) removeRow(entry);
+    });
     commit(before);
   }
 
   // razor: split the selected clip (or every clip under the playhead) at the playhead
   function splitAtPlayhead() {
     const t = snapFrame(time);
-    const targets = selected
-      ? [selected.entry]
+    const chosen = new Set(multi.map((m) => m.clip));
+    const targets = multi.length
+      ? [...new Set(multi.map((m) => m.entry))]
       : visibleEntries();
     const before = snapshot();
     let changed = false;
     targets.forEach((entry) => {
       const next = [];
       entry.row.clips.forEach((c) => {
-        const hit = selected ? c === selected.clip : true;
+        const hit = multi.length ? chosen.has(c) : true;
         if (hit && t > c.s + MIN_LEN && t < c.e - MIN_LEN) {
           const a = { s: c.s, e: t };
           const b = { s: t, e: c.e };
+          // keep the animation continuous: the value at the cut is where one half ends and the other starts
+          const u = (t - c.s) / (c.e - c.s);
+          const mid = Math.round(fromOf(c) + (toOf(c) - fromOf(c)) * (EASE_FN[c.curve || 'linear'](u)));
+          a.from = fromOf(c); a.to = mid;
+          b.from = mid; b.to = toOf(c);
           if (c.curve) { a.curve = c.curve; b.curve = c.curve; }
           next.push(a, b);
           changed = true;
@@ -528,7 +600,7 @@
     del.setAttribute('aria-label', `Delete ${g.name}`);
     del.addEventListener('click', () => {
       const before = snapshot();
-      if (selected && selected.entry.group === group) select(null);
+      if (multi.some((m) => m.entry.group === group)) select(null);
       group.removed = true;
       side.hidden = true;
       main.hidden = true;
@@ -605,6 +677,60 @@
   });
 
   updateFirstGroup();
+
+  // ---------- marquee: drag over empty space to select several tracks ----------
+  scroll.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0 || e.target.closest('.tl-clip')) return;
+    const additive = e.shiftKey || e.metaKey || e.ctrlKey;
+    const base = additive ? multi.slice() : [];
+    const box = el('div', 'tl-marquee');
+    document.body.appendChild(box);
+    const x0 = e.clientX, y0 = e.clientY;
+    let moved = false;
+
+    const entryOf = (node) => entries.find((en) => en.rowEl === node.parentElement);
+    const hitTest = (r) => {
+      const hits = [];
+      allNodes().forEach((node) => {
+        const en = entryOf(node);
+        if (!en || en.removed || en.group.removed || !node.offsetParent) return;
+        const nr = node.getBoundingClientRect();
+        const band = node.closest('.tl-group-body-track').getBoundingClientRect(); // only what's actually visible
+        const left = Math.max(nr.left, band.left), right = Math.min(nr.right, band.right);
+        const top = Math.max(nr.top, band.top), bottom = Math.min(nr.bottom, band.bottom);
+        if (right <= left || bottom <= top) return;
+        if (left < r.right && right > r.left && top < r.bottom && bottom > r.top) hits.push({ clip: node._clip, node, entry: en });
+      });
+      return hits;
+    };
+
+    const onMove = (ev) => {
+      if (ev.buttons === 0) { stop(); return; }
+      if (!moved && Math.hypot(ev.clientX - x0, ev.clientY - y0) < 4) return;
+      moved = true;
+      const r = {
+        left: Math.min(x0, ev.clientX), right: Math.max(x0, ev.clientX),
+        top: Math.min(y0, ev.clientY), bottom: Math.max(y0, ev.clientY),
+      };
+      Object.assign(box.style, { left: r.left + 'px', top: r.top + 'px', width: r.right - r.left + 'px', height: r.bottom - r.top + 'px', display: 'block' });
+      const hits = hitTest(r);
+      const keep = base.filter((b) => !hits.some((h) => h.clip === b.clip));
+      setSelection([...keep, ...hits]);
+    };
+    const stop = () => {
+      box.remove();
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', stop);
+      window.removeEventListener('pointercancel', stop);
+      window.removeEventListener('blur', stop);
+      if (!moved && !additive) setSelection([]);  // a plain click on empty space just deselects
+    };
+    box.style.display = 'none';
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', stop);
+    window.addEventListener('pointercancel', stop);
+    window.addEventListener('blur', stop);
+  });
 
   // ---------- time + playhead ----------
   const pad = (n, l = 2) => String(n).padStart(l, '0');
@@ -934,12 +1060,65 @@
   function onMenuOutside(e) { if (menu && !menu.contains(e.target)) closeMenu(); }
   function onMenuKey(e) { if (e.key === 'Escape') { e.stopPropagation(); closeMenu(); } }
 
+  // the app's own slider (same markup and styling as the Sliders panel), wired by its setupSlider()
+  function buildSlider(label, value, onChange) {
+    const item = el('div', 'slider-item');
+    item.setAttribute('data-no-elastic', ''); // no rubber-band spring when dragging past the ends
+    item.innerHTML = `
+      <div class="row">
+        <span class="label-group"><span class="label"></span></span>
+        <span class="value"><input class="value-num" type="text" inputmode="decimal" maxlength="3" size="3" /></span>
+      </div>
+      <div class="track-wrap">
+        <div class="gray-bar"><div class="gray-fill before"></div><div class="gray-fill after"></div></div>
+        <div class="thumb"></div>
+        <input class="range-input" type="range" min="${VALUE_MIN}" max="${VALUE_MAX}" step="1" value="${value}" />
+      </div>`;
+    item.querySelector('.label').textContent = label;
+    item.querySelector('.value-num').value = value;
+    if (typeof setupSlider === 'function') setupSlider(item);
+    const input = item.querySelector('.range-input');
+    const num = item.querySelector('.value-num');
+    // dragging, arrow keys on the number, typing a number: whatever changed, report the slider's value
+    const report = () => onChange(Number(input.value));
+    input.addEventListener('input', report);
+    num.addEventListener('keydown', () => setTimeout(report, 0)); // after the slider's own handler ran
+    num.addEventListener('blur', report);
+    return item;
+  }
+
   function openMenu(x, y) {
     closeMenu();
-    const current = selected.clip.curve || null;
+    const many = multi.length > 1;
+    const current = commonCurve();
     menu = el('div', 'tl-menu');
     menu.setAttribute('role', 'menu');
-    menu.appendChild(el('div', 'tl-menu-title', 'Easing'));
+
+    if (!many) {
+      // one track: two quick sliders for the setting it animates (its start and end value)
+      menu.appendChild(el('div', 'tl-menu-title', selected.entry.row.label));
+      const clip = selected.clip;
+      let before = null;
+      const edit = (key) => (v) => {
+        if (clip[key] === v) return;
+        if (before === null) before = snapshot();           // one undo step per slider gesture
+        clip[key] = v;
+      };
+      const finish = () => { if (before !== null) { commit(before); before = null; } };
+      const sliders = el('div', 'tl-menu-sliders');
+      sliders.append(buildSlider('From', fromOf(clip), edit('from')), buildSlider('To', toOf(clip), edit('to')));
+      sliders.addEventListener('pointerup', finish);
+      sliders.addEventListener('change', finish);
+      sliders.addEventListener('focusout', finish);
+      sliders.addEventListener('keyup', finish);
+      menu.appendChild(sliders);
+      menu.appendChild(el('div', 'tl-menu-sep'));
+      menu.appendChild(el('div', 'tl-menu-title', 'Easing'));
+    } else {
+      // several tracks: only the easing, applied to all of them at once
+      menu.appendChild(el('div', 'tl-menu-title', `${multi.length} tracks \u00b7 Easing`));
+    }
+
     const add = (name, label) => {
       const b = el('button', 'tl-menu-item' + (name === current ? ' is-active' : ''),
         `<span class="tl-menu-icon">${name ? curveSvg(name, 16) : ''}</span><span>${label}</span>`);
@@ -971,12 +1150,14 @@
     if (!node) { closeMenu(); return; }
     e.preventDefault();
     const entry = entries.find((en) => en.rowEl === node.parentElement);
-    select({ clip: node._clip, node, entry });
+    // right-clicking one of several selected tracks keeps the selection (the menu then edits all of them)
+    if (!(multi.length > 1 && multi.some((m) => m.node === node))) select({ clip: node._clip, node, entry });
     openMenu(e.clientX, e.clientY);
   });
 
   // clicking anywhere that isn't a track deselects (tracks stop their own pointerdown from reaching here)
   document.addEventListener('pointerdown', (e) => {
+    if (e.shiftKey || e.metaKey || e.ctrlKey) return; // those add to the selection
     if (selected && !e.target.closest('.tl-clip, .tl-ease, .tl-menu')) select(null); // the easing buttons act on the selection
   });
 
@@ -1006,6 +1187,12 @@
     } else if (mod && key === 'y') {
       e.preventDefault();
       redo();
+    } else if (mod && key === 'a') {                // select every track that's showing
+      e.preventDefault();
+      closeMenu();
+      setSelection(allNodes()
+        .filter((node) => node.offsetParent)       // skips tracks in collapsed, hidden or deleted rows and sections
+        .map((node) => ({ clip: node._clip, node, entry: entries.find((en) => en.rowEl === node.parentElement) })));
     } else if (mod) {
       return;
     } else if (key === 'delete' || key === 'backspace') {

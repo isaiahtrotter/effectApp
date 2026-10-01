@@ -6,6 +6,7 @@
   const MIN_PPS = 40;
   const MAX_PPS = 1000;
   const FPS = 25;
+  const EDGE = 12;      // px, matches --tl-edge: right padding of the timing UI and rows
   const INSET = 4;      // px, matches --tl-inset: left inset of timing UI + rows, and each band's right padding
   const ORIGIN = 2 * INSET; // time 0 in playhead-layer coordinates: viewport inset + 4px padding
   const MAX_DURATION = 120;
@@ -243,20 +244,26 @@
     if (clip.mid != null) node.querySelector('.tl-key').style.left = clip.mid * 100 + '%';
   }
 
+  function cycleEase(clip, node) {
+    const i = CURVE_ORDER.indexOf(clip.curve);
+    clip.curve = CURVE_ORDER[(i + 1) % CURVE_ORDER.length];
+    renderCurve(clip, node);
+    updateEaseButtons();
+  }
+
   function renderCurve(clip, node) {
     node.querySelectorAll('.tl-curve-line, .tl-curve').forEach((n) => n.remove());
     node.insertBefore(el('i', 'tl-curve-line'), node.firstChild);
     const btn = el('button', 'tl-curve', curveSvg(clip.curve || 'linear'));
     btn.type = 'button';
     btn.title = 'Easing (click to change)';
-    btn.addEventListener('pointerdown', (e) => e.stopPropagation());
+    // A mouse press on the icon starts dragging the whole track (see startDrag); if the press ends
+    // without moving, startDrag cycles the easing. This click only handles the keyboard (Enter/Space).
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
+      if (e.detail !== 0) return;
       const before = snapshot();
-      const i = CURVE_ORDER.indexOf(clip.curve);
-      clip.curve = CURVE_ORDER[(i + 1) % CURVE_ORDER.length];
-      renderCurve(clip, node);
-      updateEaseButtons();
+      cycleEase(clip, node);
       commit(before);
     });
     node.appendChild(btn);
@@ -303,11 +310,15 @@
 
     const before = snapshot();
     const startX = e.clientX;
+    const onCurveIcon = !!e.target.closest('.tl-curve'); // pressed on the easing icon in the middle
+    let moved = false;
     const s0 = clip.s, e0 = clip.e, m0 = clip.mid;
     const [lo, hi] = bounds(entry.row, clip);
     const pts = snapPoints(clip);
 
     const move = (ev) => {
+      if (ev.buttons === 0) { up(); return; } // released out of sight: end the drag
+      if (Math.abs(ev.clientX - startX) > 3) moved = true;
       const dt = (ev.clientX - startX) / pps;
       const free = ev.altKey; // hold Alt to drag without magnets
       if (mode === 'move') {
@@ -334,7 +345,9 @@
       node.removeEventListener('pointermove', move);
       node.removeEventListener('pointerup', up);
       node.removeEventListener('pointercancel', up);
+      if (onCurveIcon && !moved && mode === 'move') cycleEase(clip, node); // a plain click on the icon changes the easing
       commit(before);
+      if (moved) select(null); // letting go after dragging or resizing a track deselects it
     };
     node.addEventListener('pointermove', move);
     node.addEventListener('pointerup', up);
@@ -386,6 +399,22 @@
     commit(before);
   }
 
+  // Deleting a setting row: hides its label and track row; if it was the last row in its section,
+  // the whole section goes too. (Hidden, not removed, so undo can bring everything back.)
+  function removeRow(entry) {
+    if (selected && selected.entry === entry) select(null);
+    entry.removed = true;
+    entry.labEl.hidden = true;
+    entry.rowEl.hidden = true;
+    const group = entry.group;
+    if (group.entries.every((en) => en.removed)) {
+      group.removed = true;
+      group.side.hidden = true;
+      group.main.hidden = true;
+      updateFirstGroup();
+    }
+  }
+
   function deleteSelected() {
     if (!selected) return;
     const before = snapshot();
@@ -393,6 +422,8 @@
     entry.row.clips.splice(entry.row.clips.indexOf(clip), 1);
     selected = null;
     rebuildRow(entry);
+    // that was the last track in its row: remove the row (and its section, if it was the last row)
+    if (entry.row.clips.length === 0) removeRow(entry);
     commit(before);
   }
 
@@ -549,18 +580,8 @@
       // X removes this setting's label and its whole track row (undoable)
       x.addEventListener('click', () => {
         const before = snapshot();
-        if (selected && selected.entry === entry) select(null);
-        entry.removed = true;
-        labEl.hidden = true;
-        rowEl.hidden = true;
-        // deleting the last remaining track in a section deletes the whole section
-        if (group.entries.every((en) => en.removed)) {
-          group.removed = true;
-          side.hidden = true;
-          main.hidden = true;
-          updateFirstGroup();
-        }
-            commit(before);
+        removeRow(entry);
+        commit(before);
       });
     });
 
@@ -599,9 +620,11 @@
 
     // the timer pill stays fully inside the timing UI; the line and handle keep moving past its edges
     const w = flag.offsetWidth;
-    const layerW = playhead.parentElement.clientWidth;
-    const left = clamp(x - w / 2, INSET, Math.max(INSET, layerW - w));
+    const rulerRight = playhead.parentElement.clientWidth - EDGE; // the layer also covers the right padding
+    const left = clamp(x - w / 2, INSET, Math.max(INSET, rulerRight - w));
     flag.style.left = left - x + 'px';
+    // only the part of the timeline that's actually in view shows the playhead
+    playhead.style.visibility = x >= INSET && x <= rulerRight ? '' : 'hidden';
   }
 
   function setTime(t) {
@@ -615,15 +638,26 @@
   }
 
   ruler.addEventListener('pointerdown', (e) => {
-    const scrub = (ev) => setTime(snapFrame(timeFromEvent(ev)));
-    scrub(e);
-    ruler.setPointerCapture(e.pointerId);
-    const up = () => {
-      ruler.removeEventListener('pointermove', scrub);
-      ruler.removeEventListener('pointerup', up);
+    if (e.button !== 0) return;
+    const scrub = (ev) => {
+      if (ev.buttons === 0) { stop(); return; } // the button was released somewhere we never heard about
+      setTime(snapFrame(timeFromEvent(ev)));
     };
-    ruler.addEventListener('pointermove', scrub);
-    ruler.addEventListener('pointerup', up);
+    // listen on the window so letting go outside the ruler (or the window) always ends the drag
+    const stop = () => {
+      window.removeEventListener('pointermove', scrub);
+      window.removeEventListener('pointerup', stop);
+      window.removeEventListener('pointercancel', stop);
+      window.removeEventListener('blur', stop);
+      ruler.removeEventListener('lostpointercapture', stop);
+    };
+    setTime(snapFrame(timeFromEvent(e)));
+    ruler.setPointerCapture(e.pointerId);
+    window.addEventListener('pointermove', scrub);
+    window.addEventListener('pointerup', stop);
+    window.addEventListener('pointercancel', stop);
+    window.addEventListener('blur', stop);
+    ruler.addEventListener('lostpointercapture', stop);
   });
 
   let raf = null;
@@ -745,6 +779,7 @@
     const MIN_W = ZOOM_MIN_W;
 
     const move = (ev) => {
+      if (ev.buttons === 0) { up(); return; } // released out of sight: end the drag
       const dx = ev.clientX - startX;
       if (mode === 'move') {
         const left = clamp(l0 + dx, 0, trackW - w0);
@@ -852,7 +887,7 @@
 
   // ---------- vertical resize ----------
   const handle = root.querySelector('[data-tl-resize]');
-  const MIN_H = 80; // 12px padding + 36px toolbar + 20px ruler + 12px: just the timeline head
+  const MIN_H = 86; // 12px padding + 42px toolbar + 20px ruler + 12px: just the timeline head
   handle.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     handle.setPointerCapture(e.pointerId);
@@ -861,6 +896,7 @@
     const startH = root.getBoundingClientRect().height;
     const maxH = () => window.innerHeight - 24;
     const move = (ev) => {
+      if (ev.buttons === 0) { up(); return; } // released out of sight: end the drag
       const h = clamp(startH + (startY - ev.clientY), MIN_H, maxH());
       root.style.height = h + 'px';
       root.classList.toggle('is-head-only', h <= MIN_H + 12);

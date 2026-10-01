@@ -89,7 +89,7 @@ body {
   display: flex;
   align-items: stretch;
   min-height: 100vh;
-  padding: 8px;
+  padding: 12px;
   gap: 8px;
 }
 
@@ -254,6 +254,7 @@ html.light-mode .nav-item.is-active {
 .content {
   flex: 1;
   display: flex;
+  min-width: 0;
 }
 
 .panel {
@@ -1145,3 +1146,631 @@ html.light-mode .ratio-field {
   padding-right: 10px;
   text-align: left;
 }
+
+/* ---------- timeline editor ---------- */
+
+.panel-bottom {
+  align-items: flex-end;
+  min-width: 0;
+}
+
+.timeline {
+  --tl-pps: 270px;
+  --tl-row: 32px;
+  --tl-clip: 32px;
+  --tl-headrow: 22px;
+  --tl-side: 223px;
+  --tl-edge: 12px; /* right padding of the timing UI and the rows, always */
+  --tl-inset: 4px; /* left inset shared by the timing UI and the rows */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 500px;
+  min-width: 0;
+  padding: 12px 0 0 0;
+  background: var(--card-bg);
+  border-radius: 16px;
+  overflow: hidden;
+  font-family: 'Baikal Trial Variable', 'Baikal Trial Light', sans-serif;
+  font-variation-settings: 'wght' 350, 'wdth' 70, 'ital' 0;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  color: var(--text-color);
+  transition: background-color 200ms ease-out, color 200ms ease-out;
+}
+
+.tl-head { display: flex; flex: 0 0 auto; }
+.tl-side-head { flex: 0 0 var(--tl-side); padding-left: 16px; }
+.tl-main-head {
+  flex: 1;
+  min-width: 0;
+  margin: 0 var(--tl-edge) 0 var(--tl-inset);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tl-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 36px;
+}
+
+.tl-btn {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  transition: background-color 150ms ease-out, color 150ms ease-out;
+}
+.tl-btn:hover { background: color-mix(in srgb, var(--text-color) 10%, transparent); }
+.tl-btn.is-muted { color: var(--text-dim); }
+.tl-icon-pause { display: none; }
+.timeline.is-playing .tl-icon-play { display: none; }
+.timeline.is-playing .tl-icon-pause { display: block; }
+
+.tl-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 36px;
+  padding: 0 12px 0 8px;
+  background: color-mix(in srgb, var(--text-color) 7%, transparent);
+}
+.tl-dur {
+  display: flex;
+  align-items: center;
+  margin-right: 12px;
+  font-family: 'CommitMono', ui-monospace, Menlo, monospace;
+  font-size: 13px;
+  letter-spacing: 0;
+  color: var(--text-dim);
+}
+.tl-dur input {
+  width: 52px;
+  height: 20px;
+  margin: 0;
+  padding: 0 6px;
+  border: none;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--text-color) 10%, transparent);
+  color: var(--text-color);
+  font: inherit;
+  text-align: right;
+  user-select: text;
+  outline: none;
+  transition: background-color 120ms ease-out;
+}
+.tl-dur input:hover { background: color-mix(in srgb, var(--text-color) 14%, transparent); }
+.tl-dur input:focus {
+  background: color-mix(in srgb, var(--text-color) 14%, transparent);
+  box-shadow: inset 0 0 0 1px var(--text-dim);
+}
+.tl-dur span { margin-left: 4px; }
+.tl-zoom {
+  position: relative;
+  margin-left: auto;
+  width: 112px;
+  height: 20px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--text-color) 12%, transparent);
+  touch-action: none;
+}
+/* the handle floats 2px inside the pill on every side */
+.tl-zoom-thumb {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: 2px;
+  width: 100%;
+  min-width: 28px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--text-color) 19%, transparent);
+  cursor: grab;
+}
+.tl-zoom-thumb:hover { background: color-mix(in srgb, var(--text-color) 26%, transparent); }
+.tl-zoom-thumb.is-dragging { cursor: grabbing; }
+.tl-zoom-thumb b {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  cursor: ew-resize;
+}
+.tl-zoom-thumb b.l { left: 0; }
+.tl-zoom-thumb b.r { right: 0; }
+.tl-zoom-thumb b::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--text-dim);
+}
+.tl-zoom-thumb b.l::after { left: 3px; }
+.tl-zoom-thumb b.r::after { right: 3px; }
+
+.tl-ruler-wrap {
+  height: 20px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--text-color) 7%, transparent);
+  border-top: 1px solid var(--border);
+}
+.tl-ruler {
+  position: relative;
+  height: 19px;
+  width: calc(var(--tl-pps) * var(--tl-dur) + 2 * var(--tl-inset));
+  font-family: 'CommitMono', ui-monospace, Menlo, monospace;
+  font-size: 13px;
+  letter-spacing: 0;
+  cursor: col-resize;
+}
+.tl-tick {
+  position: absolute;
+  bottom: 0;
+  width: 1px;
+  height: 5px;
+  background: var(--text-dim);
+  opacity: 0.45;
+  pointer-events: none;
+}
+.tl-tick.major { height: 10px; opacity: 0.9; }
+/* labels sit in the top half, ticks in the bottom, so they can never overlap */
+.tl-tick-label {
+  position: absolute;
+  top: 2px;
+  margin-left: 5px;
+  line-height: 13px;
+  white-space: nowrap;
+  color: var(--text-dim);
+  pointer-events: none;
+}
+.tl-tick-label.is-last { margin-left: -5px; transform: translateX(-100%); }
+
+.tl-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  margin-top: 26px; /* 18px time pill + 4px gap below the ruler + 4px gap above the rows */
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+.tl-body::-webkit-scrollbar { display: none; }
+
+.tl-labels {
+  flex: 0 0 var(--tl-side);
+  padding-left: 16px;
+  min-width: 0;
+}
+.tl-scroll {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  align-self: flex-start;
+  margin: 0 var(--tl-edge) 0 var(--tl-inset); /* same left/right edges as the timing UI */
+}
+.tl-scroll::-webkit-scrollbar { display: none; }
+.tl-rows {
+  width: calc(var(--tl-pps) * var(--tl-dur) + 2 * var(--tl-inset));
+  padding-bottom: 12px;
+}
+
+.tl-group-head { height: var(--tl-headrow); margin-top: 12px; margin-bottom: 8px; }
+.tl-group.is-first .tl-group-head { margin-top: 5px; } /* room for a collapsed bar that rises above its heading */
+
+.tl-labels .tl-group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 12px;
+}
+.tl-group-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #FFFFFF;
+  font: inherit;
+  font-variation-settings: 'wght' 350, 'wdth' 65, 'ital' 0;
+  text-transform: uppercase;
+  letter-spacing: 0.07rem;
+  cursor: pointer;
+  transition: color 200ms ease-out;
+}
+html.light-mode .tl-group-name { color: #000000; }
+.tl-group-name svg { transition: transform 150ms ease-out; color: var(--text-dim); }
+.tl-group.is-collapsed .tl-group-name svg { transform: rotate(180deg); }
+
+.tl-row-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--tl-row);
+  padding-right: 12px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.tl-row-label:hover { color: var(--text-color); }
+
+.tl-hover-icon {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin-left: auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 120ms ease-out;
+}
+.tl-group-head:hover .tl-hover-icon,
+.tl-row-label:hover .tl-hover-icon { opacity: 1; }
+.tl-hover-icon:hover { color: var(--text-color); }
+
+.tl-group.is-collapsed .tl-group-body { display: none; }
+.tl-collapsed-bar { display: none; }
+.tl-group.is-collapsed .tl-collapsed-bar { display: block; }
+
+.tl-group-body-track {
+  /* the band is as wide as the visible area and sticks to the left, so it never scrolls away:
+     its rounded edges are always visible while the tracks inside it move */
+  position: sticky;
+  left: 0;
+  width: var(--tl-view-w, 100%);
+  margin: 0;
+  padding: 4px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bar) 30%, var(--card-bg));
+}
+.tl-strip {
+  position: relative;
+  width: calc(var(--tl-pps) * var(--tl-dur));
+  transform: translateX(calc(-1 * var(--tl-sl, 0px)));
+}
+.tl-collapsed-bar .tl-strip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: calc(var(--tl-pps) * var(--tl-dur) + 2 * var(--tl-inset));
+}
+.tl-track-row {
+  position: relative;
+  height: var(--tl-row);
+}
+/* flex gap instead of sibling margins: a deleted (hidden) row leaves no stray space behind */
+.tl-group-body-track .tl-strip { display: flex; flex-direction: column; gap: 4px; }
+.tl-labels .tl-group-body { display: flex; flex-direction: column; gap: 4px; padding: 4px 0; }
+.tl-collapsed-bar {
+  height: var(--tl-clip); /* a collapsed group is as tall as a track */
+  margin-left: 0;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--text-color) 7%, transparent);
+}
+/* A collapsed heading is as tall as its bar (a track) and its text stays centered in it. Its top margin
+   is trimmed by the extra height / 2, so the text sits at exactly the same y as when expanded. */
+.tl-group.is-collapsed > .tl-group-head {
+  height: var(--tl-clip);
+  margin-top: calc(12px - (var(--tl-clip) - var(--tl-headrow)) / 2);
+  margin-bottom: 0;
+}
+.tl-group.is-collapsed.is-first > .tl-group-head {
+  margin-top: calc(5px - (var(--tl-clip) - var(--tl-headrow)) / 2);
+}
+/* in the rows column the bar takes the heading's place, with the same margins */
+.tl-rows .tl-group.is-collapsed > .tl-group-head { display: none; }
+.tl-rows .tl-group.is-collapsed > .tl-collapsed-bar {
+  margin-top: calc(12px - (var(--tl-clip) - var(--tl-headrow)) / 2);
+}
+.tl-rows .tl-group.is-collapsed.is-first > .tl-collapsed-bar {
+  margin-top: calc(5px - (var(--tl-clip) - var(--tl-headrow)) / 2);
+}
+
+.tl-clip {
+  --clip-border: color-mix(in srgb, var(--bar) 78%, white);
+  position: absolute;
+  top: 0;
+  height: var(--tl-clip);
+  border-radius: 4px;
+  background: linear-gradient(to bottom,
+    color-mix(in srgb, var(--bar) 86%, black),
+    color-mix(in srgb, var(--bar) 94%, white));
+  border: 1px solid var(--clip-border);
+  cursor: grab;
+  touch-action: none;
+}
+.tl-clip.is-dragging { cursor: grabbing; z-index: 3; }
+.tl-clip.is-selected {
+  /* a lighter tint of the track's own color, not white */
+  --clip-border: color-mix(in srgb, var(--bar) 52%, white);
+  background: linear-gradient(to bottom,
+    color-mix(in srgb, var(--bar) 78%, white),
+    color-mix(in srgb, var(--bar) 86%, white));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--bar) 60%, transparent);
+}
+
+.tl-edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 12px;
+  cursor: ew-resize;
+}
+.tl-edge.l { left: 0; }
+.tl-edge.r { right: 0; }
+.tl-edge::after, .tl-key::after {
+  content: '';
+  position: absolute;
+  /* 4px padding inside the track: 1px border + 3px */
+  top: 3px;
+  bottom: 3px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--clip-border);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+.tl-edge::after { width: 4px; border-radius: 2px; }
+.tl-edge.l::after { left: 3px; }
+.tl-edge.r::after { right: 3px; }
+.tl-edge:hover::after, .tl-key:hover::after { background: color-mix(in srgb, var(--clip-border) 65%, white); }
+
+.tl-key {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  margin-left: -5px;
+  cursor: ew-resize;
+}
+.tl-key::after { left: 4px; }
+
+.tl-curve-line {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  right: 12px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.28);
+  pointer-events: none;
+}
+.tl-curve {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--bar) 70%, white);
+  color: #fff;
+  cursor: pointer;
+}
+.tl-curve:hover { background: color-mix(in srgb, var(--bar) 50%, white); }
+
+.tl-playhead-layer {
+  position: absolute;
+  top: 48px;
+  bottom: 0;
+  left: var(--tl-side);
+  right: var(--tl-edge);
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 5;
+}
+.tl-playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  background: #F5B921;
+}
+.tl-playhead::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -6px;
+  width: 13px;
+  height: 20px;
+  background: #F5B921;
+  clip-path: polygon(0 0, 100% 0, 100% 55%, 50% 100%, 0 55%);
+}
+.tl-flag {
+  position: absolute;
+  top: 24px; /* 20px ruler + 4px gap */
+  left: 0; /* set from JS so the pill never leaves the timing UI */
+  padding: 0 7px;
+  border-radius: 4px;
+  background: #F5B921;
+  color: #1A1A1B;
+  font-family: 'CommitMono', ui-monospace, Menlo, monospace;
+  font-size: 13px;
+  letter-spacing: 0;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.tl-resize {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 10px;
+  cursor: ns-resize;
+  z-index: 10;
+  touch-action: none;
+}
+.tl-resize::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 50%;
+  width: 36px;
+  height: 3px;
+  margin-left: -18px;
+  border-radius: 2px;
+  background: var(--text-dim);
+  opacity: 0;
+  transition: opacity 150ms ease-out;
+}
+.tl-resize:hover::after, .timeline.is-resizing .tl-resize::after { opacity: 0.6; }
+.timeline.is-resizing { user-select: none; }
+
+/* fade at the bottom hints that there is more to scroll to */
+.tl-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 56px;
+  background: linear-gradient(to bottom, transparent, var(--card-bg));
+  opacity: 0;
+  pointer-events: none;
+  z-index: 6;
+  transition: opacity 200ms ease-out;
+}
+.timeline.has-more .tl-fade:not(.tl-fade-top) { opacity: 0.9; }
+
+/* same fade above the tracks when scrolled down: 12 padding + 36 toolbar + 20 ruler + 20 gap */
+.tl-fade-top {
+  top: 94px;
+  bottom: auto;
+  background: linear-gradient(to top, transparent, var(--card-bg));
+}
+.timeline.has-more-above .tl-fade-top { opacity: 0.9; }
+
+/* eye toggle: a hidden group turns every track and its band the same dark gray */
+.tl-eye span { display: grid; place-items: center; }
+.tl-eye .eye-off { display: none; }
+.tl-group.is-muted .tl-eye .eye-on { display: none; }
+.tl-group.is-muted .tl-eye .eye-off { display: grid; }
+.tl-group.is-muted .tl-eye { opacity: 1; }
+.tl-group.is-muted { --bar: #5B5B5E !important; } /* beats the inline per-group color */
+.tl-group.is-muted .tl-group-name { color: var(--text-dim); }
+.tl-group-body-track, .tl-clip { transition: background-color 150ms ease-out; }
+
+/* dragged all the way down: only the timeline head (controls, toolbar, ruler) shows */
+.timeline.is-head-only .tl-flag,
+.timeline.is-head-only .tl-fade,
+.timeline.is-head-only .tl-fade-top { display: none; }
+
+/* easing buttons: left side of the toolbar, gray until a track is selected */
+.tl-ease { display: flex; gap: 2px; }
+.tl-ease .tl-btn { width: 26px; height: 26px; }
+.tl-ease .tl-btn:disabled { opacity: 0.3; cursor: default; pointer-events: none; }
+.tl-ease .tl-btn.is-active { background: color-mix(in srgb, var(--text-color) 16%, transparent); }
+
+/* eye + delete sit together at the right end of a section heading */
+.tl-group-del { margin-left: 0; }
+.tl-group[hidden] { display: none; }
+
+/* keyframe hints inside a collapsed section */
+.tl-collapsed-bar { position: sticky; left: 0; width: var(--tl-view-w, 100%); overflow: hidden; }
+.tl-kf-line {
+  position: absolute;
+  top: 50%;
+  height: 2px;
+  margin-top: -1px;
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--bar) 45%, transparent);
+  pointer-events: none;
+}
+.tl-kf {
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  transform: rotate(45deg);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--bar) 60%, white);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+
+/* loop toggle */
+.tl-btn[data-tl-loop] { color: var(--text-dim); }
+.tl-btn[data-tl-loop]:hover { color: var(--text-color); }
+.tl-btn[data-tl-loop].is-on {
+  color: var(--text-color);
+  background: color-mix(in srgb, var(--text-color) 16%, transparent);
+}
+
+/* right-click easing menu */
+.tl-menu {
+  position: fixed;
+  z-index: 1000;
+  min-width: 190px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card-bg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  font-family: 'Baikal Trial Variable', 'Baikal Trial Light', sans-serif;
+  font-variation-settings: 'wght' 350, 'wdth' 70, 'ital' 0;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  color: var(--text-color);
+  user-select: none;
+}
+.tl-menu-title {
+  padding: 4px 8px 6px;
+  font-variation-settings: 'wght' 350, 'wdth' 65, 'ital' 0;
+  font-size: 12px;
+  letter-spacing: 0.07rem;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.tl-menu-sep { height: 1px; margin: 4px 0; background: var(--border); }
+.tl-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.tl-menu-item:hover, .tl-menu-item:focus-visible { background: color-mix(in srgb, var(--text-color) 10%, transparent); outline: none; }
+.tl-menu-item.is-active { background: color-mix(in srgb, var(--text-color) 16%, transparent); }
+.tl-menu-icon { display: grid; place-items: center; width: 16px; height: 16px; color: var(--text-dim); }
+.tl-menu-item.is-active .tl-menu-icon { color: var(--text-color); }
+
+/* `display: flex` on these would otherwise override the hidden attribute used when a row is deleted */
+.tl-row-label[hidden], .tl-track-row[hidden] { display: none; }
+
+/* per-setting eye (next to the X): grays out just that row's tracks */
+.tl-row-label .tl-eye { margin-left: auto; }
+.tl-row-label .tl-row-del { margin-left: 8px; }
+.tl-row-label.is-muted .tl-eye .eye-on { display: none; }
+.tl-row-label.is-muted .tl-eye .eye-off { display: grid; }
+.tl-row-label.is-muted .tl-eye { opacity: 1; }
+.tl-row-label.is-muted > span { color: var(--text-dim); }
+.tl-track-row.is-muted { --bar: #5B5B5E; }

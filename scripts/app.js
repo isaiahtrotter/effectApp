@@ -42,7 +42,10 @@ if (shuffleBtn && sliderCard) {
     });
   });
 
-  onKey(' ', () => shuffleBtn.click());
+  onKey(' ', () => {
+    if (sliderCard.closest('[hidden]')) return; // space belongs to the visible panel
+    shuffleBtn.click();
+  });
 }
 
 const shuffleDurationItem = document.querySelector('[data-shuffle-duration]');

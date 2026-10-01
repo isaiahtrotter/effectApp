@@ -212,7 +212,18 @@
     multi = list;
     selected = list.length ? list[list.length - 1] : null;
     multi.forEach((m) => m.node.classList.add('is-selected'));
+    // a collapsed section shows that tracks inside it are selected
+    groupEntries.forEach((g) => {
+      if (g.bar) g.bar.classList.toggle('is-selected', g.entries.some((en) => !en.removed && multi.some((m) => m.entry === en)));
+    });
     updateEaseButtons();
+  }
+
+  // every track that exists in a live row, including the ones in collapsed sections
+  function allLiveTracks() {
+    return entries
+      .filter((en) => !en.removed && !en.group.removed)
+      .flatMap((en) => Array.from(en.rowEl.querySelectorAll('.tl-clip')).map((node) => ({ clip: node._clip, node, entry: en })));
   }
   function select(sel) { setSelection(sel ? [sel] : []); }
 
@@ -701,6 +712,17 @@
         if (right <= left || bottom <= top) return;
         if (left < r.right && right > r.left && top < r.bottom && bottom > r.top) hits.push({ clip: node._clip, node, entry: en });
       });
+      // dragging over a collapsed section selects every track inside it
+      groupEntries.forEach((g) => {
+        if (g.removed || !g.side.classList.contains('is-collapsed') || !g.bar.offsetParent) return;
+        const br = g.bar.getBoundingClientRect();
+        if (br.left < r.right && br.right > r.left && br.top < r.bottom && br.bottom > r.top) {
+          g.entries.forEach((en) => {
+            if (en.removed) return;
+            en.rowEl.querySelectorAll('.tl-clip').forEach((node) => hits.push({ clip: node._clip, node, entry: en }));
+          });
+        }
+      });
       return hits;
     };
 
@@ -1187,12 +1209,10 @@
     } else if (mod && key === 'y') {
       e.preventDefault();
       redo();
-    } else if (mod && key === 'a') {                // select every track that's showing
+    } else if (mod && key === 'a') {                // select every track
       e.preventDefault();
       closeMenu();
-      setSelection(allNodes()
-        .filter((node) => node.offsetParent)       // skips tracks in collapsed, hidden or deleted rows and sections
-        .map((node) => ({ clip: node._clip, node, entry: entries.find((en) => en.rowEl === node.parentElement) })));
+      setSelection(allLiveTracks());               // everything that hasn't been deleted, collapsed sections included
     } else if (mod) {
       return;
     } else if (key === 'delete' || key === 'backspace') {

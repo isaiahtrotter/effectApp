@@ -354,15 +354,16 @@
 
     // pressing a track that's part of a multi-selection drags the whole selection
     const group = mode === 'move' && multi.length > 1 && multi.some((m) => m.clip === clip) ? multi.slice() : null;
-    if (!group) select({ clip, node, entry });
+    const onCurveIcon = !!e.target.closest('.tl-curve'); // pressed on the easing icon in the middle
+    if (!group && !onCurveIcon) select({ clip, node, entry }); // a plain click on the icon only changes the easing, it doesn't grab the track
     node.setPointerCapture(e.pointerId);
-    node.classList.add('is-dragging');
+    // pressing the easing icon is a click: keep the pointer (the captured track would otherwise show its grab hand) until it turns into a drag
+    if (onCurveIcon) node.style.cursor = 'pointer'; else node.classList.add('is-dragging');
 
     const before = snapshot();
     const startX = e.clientX;
     // shortest the track may get: with an easing icon it needs room for the icon between the handles
     const need = clip.curve ? Math.max(MIN_LEN, CURVE_MIN_PX / pps) : MIN_LEN;
-    const onCurveIcon = !!e.target.closest('.tl-curve'); // pressed on the easing icon in the middle
     let moved = false;
     const s0 = clip.s, e0 = clip.e, m0 = clip.mid;
     const selectedClips = group ? new Set(group.map((m) => m.clip)) : null;
@@ -380,7 +381,11 @@
 
     const move = (ev) => {
       if (ev.buttons === 0) { up(); return; } // released out of sight: end the drag
-      if (Math.abs(ev.clientX - startX) > 3) moved = true;
+      if (!moved && Math.abs(ev.clientX - startX) > 3) {
+        moved = true;
+        if (onCurveIcon) { node.style.cursor = ''; node.classList.add('is-dragging'); }
+        if (onCurveIcon && !group) select({ clip, node, entry }); // dragging from the icon moves the track like any other press
+      }
       const dt = (ev.clientX - startX) / pps;
       const free = ev.altKey; // hold Alt to drag without magnets
       if (mode === 'move') {
@@ -413,13 +418,14 @@
     };
     const up = () => {
       node.classList.remove('is-dragging');
+      node.style.cursor = '';
       node.removeEventListener('pointermove', move);
       node.removeEventListener('pointerup', up);
       node.removeEventListener('pointercancel', up);
       if (onCurveIcon && !moved && mode === 'move' && !group) cycleEase(clip, node); // a plain click on the icon changes the easing
       commit(before);
       if (moved) select(null);                              // letting go after dragging or resizing deselects
-      else if (group) select({ clip, node, entry });        // a plain click on one of several selected tracks keeps just that one
+      else if (group && !onCurveIcon) select({ clip, node, entry });        // a plain click on one of several selected tracks keeps just that one
     };
     node.addEventListener('pointermove', move);
     node.addEventListener('pointerup', up);
@@ -785,11 +791,14 @@
     return (e.clientX - rect.left + rulerWrap.scrollLeft - INSET) / pps;
   }
 
-  ruler.addEventListener('pointerdown', (e) => {
+  // dragging the ruler jumps the playhead to the pointer; dragging the timer pill moves it from where it was grabbed
+  function startScrub(e, target, grab) {
     if (e.button !== 0) return;
+    const offset = grab ? time - timeFromEvent(e) : 0; // where on the pill it was grabbed
+    const at = (ev) => snapFrame(timeFromEvent(ev) + offset);
     const scrub = (ev) => {
       if (ev.buttons === 0) { stop(); return; } // the button was released somewhere we never heard about
-      setTime(snapFrame(timeFromEvent(ev)));
+      setTime(at(ev));
     };
     // listen on the window so letting go outside the ruler (or the window) always ends the drag
     const stop = () => {
@@ -797,16 +806,21 @@
       window.removeEventListener('pointerup', stop);
       window.removeEventListener('pointercancel', stop);
       window.removeEventListener('blur', stop);
-      ruler.removeEventListener('lostpointercapture', stop);
+      target.removeEventListener('lostpointercapture', stop);
     };
-    setTime(snapFrame(timeFromEvent(e)));
-    ruler.setPointerCapture(e.pointerId);
+    e.preventDefault();
+    if (!grab) setTime(at(e));
+    target.setPointerCapture(e.pointerId);
     window.addEventListener('pointermove', scrub);
     window.addEventListener('pointerup', stop);
     window.addEventListener('pointercancel', stop);
     window.addEventListener('blur', stop);
-    ruler.addEventListener('lostpointercapture', stop);
-  });
+    target.addEventListener('lostpointercapture', stop);
+  }
+  // the ruler and the empty band above it both scrub
+  const mainHead = rulerWrap.parentElement;
+  mainHead.addEventListener('pointerdown', (e) => startScrub(e, mainHead, false));
+  flag.addEventListener('pointerdown', (e) => startScrub(e, flag, true));
 
   let raf = null;
   let last = 0;
@@ -843,22 +857,8 @@
   });
   root.querySelector('[data-tl-rewind]').addEventListener('click', () => { setTime(0); scroll.scrollLeft = 0; });
 
-  // ---------- zoom / scroll pill ----------
-  const zoom = root.querySelector('[data-tl-zoom]');
-  const thumb = root.querySelector('[data-tl-zoomthumb]');
-  const ZOOM_PAD = 2;   // px between the handle and the pill it sits in
-  const ZOOM_MIN_W = 28;
+  // ---------- zoom ----------
   let fitMode = true; // until the user zooms, the whole timeline fits the visible width
-
-  function updateThumb() {
-    const trackW = zoom.clientWidth - 2 * ZOOM_PAD;
-    const t0 = scroll.scrollLeft / pps;
-    const vt = scroll.clientWidth / pps;
-    const left = clamp(t0 / duration, 0, 1);
-    const width = clamp(vt / duration, 0, 1 - left);
-    thumb.style.left = ZOOM_PAD + left * trackW + 'px';
-    thumb.style.width = Math.max(width * trackW, ZOOM_MIN_W) + 'px';
-  }
 
   function relayout() {
     root.style.setProperty('--tl-pps', pps + 'px');
@@ -866,7 +866,6 @@
     refreshSummaries();
     buildRuler();
     render();
-    updateThumb();
   }
 
   function fitWidth() {
@@ -877,7 +876,6 @@
     scroll.scrollLeft = 0;
     rulerWrap.scrollLeft = 0;
     render();
-    updateThumb();
   }
 
   function setZoom(nextPps, t0) {
@@ -888,7 +886,6 @@
     scroll.scrollLeft = t0 * pps;
     rulerWrap.scrollLeft = scroll.scrollLeft;
     render();
-    updateThumb();
   }
 
   // the colored bands stay put (so their rounded edges always show); only what's inside them scrolls
@@ -902,7 +899,6 @@
     syncScrollVars();
     rulerWrap.scrollLeft = scroll.scrollLeft;
     render();
-    updateThumb();
   });
 
   // ctrl / cmd + wheel (or trackpad pinch) zooms around the pointer
@@ -915,57 +911,7 @@
     setZoom(next, tAt - (e.clientX - rect.left - INSET) / next);
   }, { passive: false });
 
-  function dragThumb(e, mode) {
-    e.preventDefault();
-    e.stopPropagation();
-    thumb.setPointerCapture(e.pointerId);
-    thumb.classList.add('is-dragging');
-    const trackW = zoom.clientWidth - 2 * ZOOM_PAD;
-    const startX = e.clientX;
-    const l0 = thumb.offsetLeft - ZOOM_PAD;
-    const w0 = thumb.offsetWidth;
-    const MIN_W = ZOOM_MIN_W;
-
-    const move = (ev) => {
-      if (ev.buttons === 0) { up(); return; } // released out of sight: end the drag
-      const dx = ev.clientX - startX;
-      if (mode === 'move') {
-        const left = clamp(l0 + dx, 0, trackW - w0);
-        scroll.scrollLeft = (left / trackW) * duration * pps;
-        return;
-      }
-      let left = l0, width = w0;
-      if (mode === 'l') {
-        left = clamp(l0 + dx, 0, l0 + w0 - MIN_W);
-        width = l0 + w0 - left;
-      } else {
-        width = clamp(w0 + dx, MIN_W, trackW - l0);
-      }
-      const vt = (width / trackW) * duration;
-      setZoom(scroll.clientWidth / vt, (left / trackW) * duration);
-    };
-    const up = () => {
-      thumb.classList.remove('is-dragging');
-      thumb.removeEventListener('pointermove', move);
-      thumb.removeEventListener('pointerup', up);
-      thumb.removeEventListener('pointercancel', up);
-    };
-    thumb.addEventListener('pointermove', move);
-    thumb.addEventListener('pointerup', up);
-    thumb.addEventListener('pointercancel', up);
-  }
-
-  thumb.addEventListener('pointerdown', (e) => dragThumb(e, 'move'));
-  thumb.querySelector('.l').addEventListener('pointerdown', (e) => dragThumb(e, 'l'));
-  thumb.querySelector('.r').addEventListener('pointerdown', (e) => dragThumb(e, 'r'));
-  zoom.addEventListener('pointerdown', (e) => {
-    if (e.target !== zoom) return;
-    const rect = zoom.getBoundingClientRect();
-    const t = ((e.clientX - rect.left - ZOOM_PAD) / (zoom.clientWidth - 2 * ZOOM_PAD)) * duration;
-    scroll.scrollLeft = t * pps - scroll.clientWidth / 2;
-  });
-  window.addEventListener('resize', updateThumb);
-  new ResizeObserver(() => { syncScrollVars(); if (fitMode) fitWidth(); else updateThumb(); }).observe(scroll);
+  new ResizeObserver(() => { syncScrollVars(); if (fitMode) fitWidth(); }).observe(scroll);
 
   // ---------- duration ----------
   const fitDurWidth = () => {}; // the field has a fixed width now (text is right-aligned inside it)
@@ -1000,7 +946,6 @@
     durInput.value = duration;
     fitDurWidth();
     render();
-    updateThumb();
     commit(before);
   }
 
@@ -1035,7 +980,15 @@
 
   // ---------- vertical resize ----------
   const handle = root.querySelector('[data-tl-resize]');
-  const MIN_H = 86; // 12px padding + 42px toolbar + 20px ruler + 12px: just the timeline head
+  const FADE_H = 100;     // above this height the easing row is fully there
+  const MIN_H = 54;       // 42px (bottom of the buttons row) + 12px, the same as the padding above and to the left
+  const HEAD_ONLY_H = 86;  // below this the tracks area is gone too: hide its fades
+  // 0 = normal, 1 = fully collapsed: drives the easing row fading out
+  function setCollapse(h) {
+    const p = clamp((FADE_H - h) / (FADE_H - MIN_H), 0, 1);
+    root.style.setProperty('--tl-collapse', p);
+    root.classList.toggle('is-head-only', h < HEAD_ONLY_H);
+  }
   handle.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     handle.setPointerCapture(e.pointerId);
@@ -1047,7 +1000,7 @@
       if (ev.buttons === 0) { up(); return; } // released out of sight: end the drag
       const h = clamp(startH + (startY - ev.clientY), MIN_H, maxH());
       root.style.height = h + 'px';
-      root.classList.toggle('is-head-only', h <= MIN_H + 12);
+      setCollapse(h);
     };
     const up = () => {
       root.classList.remove('is-resizing');
@@ -1242,5 +1195,4 @@
   });
 
   render();
-  updateThumb();
 })();

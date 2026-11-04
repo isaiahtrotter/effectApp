@@ -539,32 +539,6 @@
     commit(before);
   }
 
-  // ---------- collapsed-section hints ----------
-  // A collapsed section keeps a thin line wherever tracks inside it overlap in time.
-  function renderSummary(group) {
-    if (!group.side.classList.contains('is-collapsed')) return;
-    group.barStrip.textContent = '';
-    const spans = group.entries
-      .filter((en) => !en.removed)
-      .flatMap((en) => en.row.clips.map((c) => [c.s, c.e]))
-      .sort((a, b) => a[0] - b[0]);
-    if (!spans.length) return;
-
-    const merged = [];
-    spans.forEach(([a, b]) => {
-      const last = merged[merged.length - 1];
-      if (last && a <= last[1] + 1e-6) last[1] = Math.max(last[1], b);
-      else merged.push([a, b]);
-    });
-    merged.forEach(([a, b]) => {
-      const line = el('i', 'tl-kf-line');
-      line.style.left = INSET + a * pps + 'px'; // the bar starts INSET in, like the rows' band
-      line.style.width = (b - a) * pps + 'px';
-      group.barStrip.appendChild(line);
-    });
-  }
-  const refreshSummaries = () => groupEntries.forEach(renderSummary);
-
   // ---------- groups / rows ----------
   GROUPS.forEach((g) => {
     const side = el('div', 'tl-group');
@@ -638,11 +612,8 @@
     name.addEventListener('click', () => {
       side.classList.toggle('is-collapsed');
       main.classList.toggle('is-collapsed');
-      renderSummary(group);
       name.blur(); // no stray focus ring when you keep using the keyboard shortcuts
     });
-
-    if (g.collapsed) renderSummary(group);
 
     labelsEl.appendChild(side);
     rowsEl.appendChild(main);
@@ -747,7 +718,14 @@
   function startScrub(e, target, grab) {
     if (e.button !== 0) return;
     const offset = grab ? time - timeFromEvent(e) : 0; // where on the pill it was grabbed
-    const at = (ev) => snapFrame(timeFromEvent(ev) + offset);
+    // while zoomed in, dragging can't push the playhead past the edge of the view (it would disappear)
+    const at = (ev) => {
+      const rulerRight = playhead.parentElement.clientWidth - EDGE;
+      const lo = Math.ceil(((INSET - ORIGIN + scroll.scrollLeft) / pps) * FPS) / FPS;
+      const hi = Math.floor(((rulerRight - ORIGIN + scroll.scrollLeft) / pps) * FPS) / FPS;
+      const t = snapFrame(timeFromEvent(ev) + offset);
+      return hi >= lo ? clamp(t, lo, hi) : t;
+    };
     const scrub = (ev) => {
       if (ev.buttons === 0) { stop(); return; } // the button was released somewhere we never heard about
       setTime(at(ev));
@@ -814,10 +792,8 @@
   function relayout() {
     root.style.setProperty('--tl-pps', pps + 'px');
     allNodes().forEach((node) => layoutClip(node._clip, node));
-    refreshSummaries();
     buildRuler();
     render();
-    updateSideFades();
   }
 
   function fitWidth() {
@@ -838,20 +814,13 @@
     scroll.scrollLeft = t0 * pps;
     rulerWrap.scrollLeft = scroll.scrollLeft;
     render();
-    updateSideFades();
   }
 
   // the colored bands stay put (so their rounded edges always show); only what's inside them scrolls
   const syncScrollVars = () => {
     root.style.setProperty('--tl-sl', scroll.scrollLeft + 'px');
     root.style.setProperty('--tl-view-w', scroll.clientWidth + 'px');
-    updateSideFades();
   };
-  // soft fades on the left / right edges while there is more timeline to scroll to
-  function updateSideFades() {
-    root.classList.toggle('has-more-left', scroll.scrollLeft > 2);
-    root.classList.toggle('has-more-right', scroll.scrollWidth - scroll.scrollLeft - scroll.clientWidth > 2);
-  }
   syncScrollVars();
 
   scroll.addEventListener('scroll', () => {
@@ -860,15 +829,20 @@
     render();
   });
 
-  // ctrl / cmd + wheel (or trackpad pinch) zooms around the pointer
-  scroll.addEventListener('wheel', (e) => {
-    if (!(e.ctrlKey || e.metaKey)) return;
+  // the wheel (or a trackpad pinch / ctrl or cmd + wheel) zooms around the pointer, over the tracks and the ruler;
+  // sideways trackpad swipes still scroll
+  const onWheelZoom = (e) => {
+    const pinch = e.ctrlKey || e.metaKey;
+    if (!pinch && Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
     e.preventDefault();
     const rect = scroll.getBoundingClientRect();
     const tAt = (scroll.scrollLeft + e.clientX - rect.left - INSET) / pps;
-    const next = pps * Math.exp(-e.deltaY * 0.01);
+    const dy = pinch ? e.deltaY : clamp(e.deltaY, -40, 40); // one mouse-wheel notch is a modest step
+    const next = pps * Math.exp(-dy * 0.01);
     setZoom(next, tAt - (e.clientX - rect.left - INSET) / next);
-  }, { passive: false });
+  };
+  scroll.addEventListener('wheel', onWheelZoom, { passive: false });
+  rulerWrap.addEventListener('wheel', onWheelZoom, { passive: false });
 
   new ResizeObserver(() => { syncScrollVars(); if (fitMode) fitWidth(); }).observe(scroll);
 

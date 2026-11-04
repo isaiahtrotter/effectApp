@@ -1162,6 +1162,7 @@ html.light-mode .ratio-field {
   --tl-side: 323px; /* label column; 100px of it is gap before the tracks */
   --tl-edge: 12px; /* right padding of the timing UI and the rows, always */
   --tl-inset: 4px; /* left inset shared by the timing UI and the rows */
+  --tl-tree-line: color-mix(in srgb, var(--text-color) 15%, var(--card-bg)); /* solid (mixed into the card color), not transparent */
   position: relative;
   display: flex;
   flex-direction: column;
@@ -1282,7 +1283,7 @@ html.light-mode .ratio-field {
 /* labels sit in the top half, ticks in the bottom, so they can never overlap */
 .tl-tick-label {
   position: absolute;
-  top: 2px;
+  top: 0;
   margin-left: 5px;
   line-height: 13px;
   white-space: nowrap;
@@ -1358,7 +1359,7 @@ html.light-mode .tl-group-name { color: #000000; }
   height: var(--tl-row);
   padding-right: 12px;
   padding-left: 18px; /* the section name's text starts here: 10px chevron + 8px gap */
-  color: var(--text-dim);
+  color: var(--text-color);
   white-space: nowrap;
   /* same type as the section name */
   font-variation-settings: 'wght' 350, 'wdth' 65, 'ital' 0;
@@ -1373,10 +1374,10 @@ html.light-mode .tl-group-name { color: #000000; }
   left: 5px;
   top: 50%;
   width: 8px;
-  border-top: 1px dashed color-mix(in srgb, var(--text-color) 25%, transparent);
+  height: 1px;
+  background: repeating-linear-gradient(to right, var(--tl-tree-line) 0 3px, transparent 3px 5px);
   pointer-events: none;
 }
-.tl-row-label:hover { color: var(--text-color); }
 
 .tl-hover-icon {
   display: grid;
@@ -1438,7 +1439,9 @@ html.light-mode .tl-group-name { color: #000000; }
   left: 5px;
   top: 0;
   bottom: calc(4px + var(--tl-row) / 2);
-  border-left: 1px dashed color-mix(in srgb, var(--text-color) 25%, transparent);
+  width: 1px;
+  /* dashes: one solid color, 3px on / 2px off */
+  background: repeating-linear-gradient(to bottom, var(--tl-tree-line) 0 3px, transparent 3px 5px);
   pointer-events: none;
 }
 .tl-collapsed-bar {
@@ -1646,7 +1649,7 @@ html.light-mode .tl-group-name { color: #000000; }
   z-index: 6;
   transition: opacity 150ms ease-out;
 }
-.timeline.has-more .tl-fade:not(.tl-fade-top):not(.tl-fade-left):not(.tl-fade-right) { opacity: 0.9; }
+.timeline.has-more .tl-fade:not(.tl-fade-top) { opacity: 0.9; }
 
 /* same fade above the tracks when scrolled down: 12 padding + 40 head + 26 gap */
 .tl-fade-top {
@@ -1655,28 +1658,6 @@ html.light-mode .tl-group-name { color: #000000; }
   background: linear-gradient(to top, transparent, var(--card-bg));
 }
 .timeline.has-more-above .tl-fade-top { opacity: 0.9; }
-
-/* side fades when zoomed in: only on the edge that has more timeline beyond it */
-.tl-fade-left, .tl-fade-right {
-  top: 12px;
-  bottom: 0;
-  height: auto;
-  width: 32px;
-}
-.tl-fade-left {
-  left: calc(var(--tl-side) + var(--tl-inset));
-  right: auto;
-  background: linear-gradient(to left, transparent, var(--card-bg));
-}
-.tl-fade-right {
-  right: var(--tl-edge);
-  left: auto;
-  background: linear-gradient(to right, transparent, var(--card-bg));
-}
-.timeline.has-more-left .tl-fade-left,
-.timeline.has-more-right .tl-fade-right { opacity: 0.9; }
-.timeline.is-head-only .tl-fade-left,
-.timeline.is-head-only .tl-fade-right { display: none; }
 
 .tl-group-body-track { transition: background-color 150ms ease-out; }
 .tl-clip { transition: background-color 150ms ease-out, filter 150ms ease-out; }
@@ -1695,15 +1676,6 @@ html.light-mode .tl-group-name { color: #000000; }
 
 /* collapsed section bar */
 .tl-collapsed-bar { position: sticky; left: 0; width: var(--tl-view-w, 100%); overflow: hidden; }
-.tl-kf-line {
-  position: absolute;
-  top: 50%;
-  height: 2px;
-  margin-top: -1px;
-  border-radius: 1px;
-  background: color-mix(in srgb, var(--bar) 45%, transparent);
-  pointer-events: none;
-}
 
 /* loop toggle */
 .tl-btn[data-tl-loop] { color: var(--text-dim); }

@@ -1159,7 +1159,7 @@ html.light-mode .ratio-field {
   --tl-row: 32px;
   --tl-clip: 32px;
   --tl-headrow: 22px;
-  --tl-side: 223px;
+  --tl-side: 323px; /* label column; 100px of it is gap before the tracks */
   --tl-edge: 12px; /* right padding of the timing UI and the rows, always */
   --tl-inset: 4px; /* left inset shared by the timing UI and the rows */
   position: relative;
@@ -1192,24 +1192,24 @@ html.light-mode .ratio-field {
   flex-direction: column;
   justify-content: flex-start;
   cursor: col-resize;
-  padding-top: 5px; /* the 20px ruler is centered on the 30px button row */
+  padding-top: 10px; /* the 20px ruler is centered on the 40px button row */
 }
 
 .tl-controls {
   display: flex;
   align-items: center;
   gap: 4px;
-  height: 30px;
+  height: 40px;
 }
 
 .tl-btn {
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  width: 40px;
+  height: 40px;
   padding: 0;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   background: transparent;
   color: var(--text-color);
   cursor: pointer;
@@ -1221,20 +1221,15 @@ html.light-mode .ratio-field {
 .timeline.is-playing .tl-icon-play { display: none; }
 .timeline.is-playing .tl-icon-pause { display: block; }
 
-.tl-toolbar {
-  display: flex;
-  align-items: center;
-  height: 32px; /* 26px controls + 3px above and below; with the 30px button row it matches the 62px timing UI */
-}
 .tl-dur {
   /* the label is the visible field: number and "s" sit together, right-aligned inside it */
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  height: 26px; /* same height as the easing buttons */
+  height: 30px;
   margin-left: 4px;
   padding: 0 6px;
-  border-radius: 6px; /* same radius as the easing buttons */
+  border-radius: 8px; /* same radius as the buttons */
   background: color-mix(in srgb, var(--text-color) 7%, transparent); /* same gray as a collapsed section */
   font-family: 'CommitMono', ui-monospace, Menlo, monospace;
   font-size: 13px;
@@ -1301,7 +1296,7 @@ html.light-mode .ratio-field {
   display: flex;
   flex: 1;
   min-height: 0;
-  margin-top: 8px; /* gap between the ruler and the rows (the time pill now lives on the ruler) */
+  margin-top: 26px; /* 18px time pill + 4px gap below the ruler + 4px gap above the rows */
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: none;
@@ -1353,8 +1348,8 @@ html.light-mode .ratio-field {
   transition: color 150ms ease-out;
 }
 html.light-mode .tl-group-name { color: #000000; }
-.tl-group-name svg { transition: transform 150ms ease-out; color: var(--text-dim); }
-.tl-group.is-collapsed .tl-group-name svg { transform: rotate(180deg); }
+.tl-group-name svg { transition: transform 150ms ease-out; color: inherit; }
+.tl-group.is-collapsed .tl-group-name svg { transform: rotate(-90deg); } /* chevron sits before the name: down when open, right when collapsed */
 
 .tl-row-label {
   display: flex;
@@ -1362,8 +1357,24 @@ html.light-mode .tl-group-name { color: #000000; }
   justify-content: space-between;
   height: var(--tl-row);
   padding-right: 12px;
+  padding-left: 18px; /* the section name's text starts here: 10px chevron + 8px gap */
   color: var(--text-dim);
   white-space: nowrap;
+  /* same type as the section name */
+  font-variation-settings: 'wght' 350, 'wdth' 65, 'ital' 0;
+  text-transform: uppercase;
+  letter-spacing: 0.07rem;
+  position: relative;
+}
+/* short dashed branch from the tree line to this setting */
+.tl-row-label::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 50%;
+  width: 8px;
+  border-top: 1px dashed color-mix(in srgb, var(--text-color) 25%, transparent);
+  pointer-events: none;
 }
 .tl-row-label:hover { color: var(--text-color); }
 
@@ -1419,7 +1430,17 @@ html.light-mode .tl-group-name { color: #000000; }
 }
 /* flex gap instead of sibling margins: a deleted (hidden) row leaves no stray space behind */
 .tl-group-body-track .tl-strip { display: flex; flex-direction: column; gap: 4px; }
-.tl-labels .tl-group-body { display: flex; flex-direction: column; gap: 4px; padding: 4px 0; }
+.tl-labels .tl-group-body { position: relative; display: flex; flex-direction: column; gap: 4px; padding: 4px 0; }
+/* dashed tree line under the chevron, ending at the middle of the last setting */
+.tl-labels .tl-group-body::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 0;
+  bottom: calc(4px + var(--tl-row) / 2);
+  border-left: 1px dashed color-mix(in srgb, var(--text-color) 25%, transparent);
+  pointer-events: none;
+}
 .tl-collapsed-bar {
   height: var(--tl-clip); /* a collapsed group is as tall as a track */
   margin-left: 0;
@@ -1532,11 +1553,11 @@ html.light-mode .tl-group-name { color: #000000; }
 
 .tl-playhead-layer {
   position: absolute;
-  top: 17px; /* 12px + 5px: where the ruler starts, centered on the top row of buttons */
+  top: 22px; /* 12px + 10px: where the ruler starts, centered on the row of buttons */
   bottom: 0;
   left: var(--tl-side);
   right: 0; /* reaches into the 12px right padding so the handle at the very end isn't cut off */
-  overflow: hidden;
+  overflow: visible; /* the time pill may reach past the ruler's ends (the card itself still clips) */
   pointer-events: none;
   z-index: 7; /* above the scroll fades (6) so the line is never dimmed by them */
 }
@@ -1548,22 +1569,41 @@ html.light-mode .tl-group-name { color: #000000; }
   width: 1px;
   background: #F5B921;
 }
+/* the playhead's head: sits on the ruler, pointing down at the line */
+.tl-playhead::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -6px;
+  width: 13px;
+  height: 20px;
+  background: #F5B921;
+  clip-path: polygon(0 0, 100% 0, 100% 55%, 50% 100%, 0 55%);
+}
+/* collapsed down: the head stays put and the timecode slides up over it (see .tl-flag) */
 .tl-flag {
   position: absolute;
-  top: 0; /* sits on the ruler, so it stays visible even with the tracks collapsed away */
-  left: 0; /* set from JS so the pill never leaves the timing UI */
+  top: 29px; /* centered between the ruler's bottom (20px) and the top of the tracks (56px): 9px above and below */
+  left: 0;
+  transform: translateX(calc(-50% + 0.5px)); /* centered on the 1px playhead line */
   padding: 0 7px;
   background: #F5B921;
   color: #1A1A1B;
   font-family: 'CommitMono', ui-monospace, Menlo, monospace;
   font-size: 13px;
   letter-spacing: 0;
-  line-height: 20px;
+  line-height: 18px;
   white-space: nowrap;
   pointer-events: auto; /* the layer ignores the mouse, the pill doesn't: it's a drag handle */
   cursor: grab;
   touch-action: none;
   user-select: none;
+  border-radius: 4px;
+  transition: top 180ms ease-out, line-height 180ms ease-out, border-radius 180ms ease-out;
+}
+.timeline.is-head-only .tl-flag {
+  top: 0;
+  line-height: 20px;
   border-radius: 4px 4px 6px 6px;
 }
 
@@ -1606,48 +1646,54 @@ html.light-mode .tl-group-name { color: #000000; }
   z-index: 6;
   transition: opacity 150ms ease-out;
 }
-.timeline.has-more .tl-fade:not(.tl-fade-top) { opacity: 0.9; }
+.timeline.has-more .tl-fade:not(.tl-fade-top):not(.tl-fade-left):not(.tl-fade-right) { opacity: 0.9; }
 
-/* same fade above the tracks when scrolled down: 12 padding + 62 head + 8 gap */
+/* same fade above the tracks when scrolled down: 12 padding + 40 head + 26 gap */
 .tl-fade-top {
-  top: 82px;
+  top: 78px;
   bottom: auto;
   background: linear-gradient(to top, transparent, var(--card-bg));
 }
 .timeline.has-more-above .tl-fade-top { opacity: 0.9; }
 
-/* eye toggle: a hidden group turns every track and its band the same dark gray */
-.tl-eye span { display: grid; place-items: center; }
-.tl-eye .eye-off { display: none; }
-.tl-group.is-muted .tl-eye .eye-on { display: none; }
-.tl-group.is-muted .tl-eye .eye-off { display: grid; }
-.tl-group.is-muted .tl-eye { opacity: 1; }
-.tl-group.is-muted { --bar: #5B5B5E !important; } /* beats the inline per-group color */
-.tl-group.is-muted .tl-group-name { color: var(--text-dim); }
+/* side fades when zoomed in: only on the edge that has more timeline beyond it */
+.tl-fade-left, .tl-fade-right {
+  top: 12px;
+  bottom: 0;
+  height: auto;
+  width: 32px;
+}
+.tl-fade-left {
+  left: calc(var(--tl-side) + var(--tl-inset));
+  right: auto;
+  background: linear-gradient(to left, transparent, var(--card-bg));
+}
+.tl-fade-right {
+  right: var(--tl-edge);
+  left: auto;
+  background: linear-gradient(to right, transparent, var(--card-bg));
+}
+.timeline.has-more-left .tl-fade-left,
+.timeline.has-more-right .tl-fade-right { opacity: 0.9; }
+.timeline.is-head-only .tl-fade-left,
+.timeline.is-head-only .tl-fade-right { display: none; }
+
 .tl-group-body-track { transition: background-color 150ms ease-out; }
 .tl-clip { transition: background-color 150ms ease-out, filter 150ms ease-out; }
 .tl-clip:hover:not(.is-selected) { filter: brightness(1.12); } /* just a touch brighter; a selected track already has its own lighter look */
 
-/* dragged all the way down: only the buttons and the ruler show; the easing row fades out without touching the layout */
-.tl-toolbar {
-  opacity: max(0, calc(1 - var(--tl-collapse, 0) * 1.5));
-  transition: none;
-}
-.timeline.is-head-only .tl-toolbar { pointer-events: none; }
+/* dragged all the way down: only the buttons and the ruler show */
 .timeline.is-head-only .tl-fade,
 .timeline.is-head-only .tl-fade-top { display: none; }
 
-/* easing buttons: left side of the toolbar, gray until a track is selected */
-.tl-ease { display: flex; gap: 4px; } /* same 28px pitch as the transport buttons above, so each icon sits right under one */
-.tl-ease .tl-btn { width: 28px; height: 26px; }
+/* easing button: sits after the volume button, gray until a track is selected */
 .tl-ease .tl-btn:disabled { opacity: 0.3; cursor: default; pointer-events: none; }
-.tl-ease .tl-btn.is-active { background: color-mix(in srgb, var(--text-color) 16%, transparent); }
+.tl-ease .tl-btn[aria-expanded="true"] { background: color-mix(in srgb, var(--text-color) 16%, transparent); }
+.tl-ease-menu { min-width: 0; }
 
-/* eye + delete sit together at the right end of a section heading */
-.tl-group-del { margin-left: 0; }
 .tl-group[hidden] { display: none; }
 
-/* keyframe hints inside a collapsed section */
+/* collapsed section bar */
 .tl-collapsed-bar { position: sticky; left: 0; width: var(--tl-view-w, 100%); overflow: hidden; }
 .tl-kf-line {
   position: absolute;
@@ -1656,18 +1702,6 @@ html.light-mode .tl-group-name { color: #000000; }
   margin-top: -1px;
   border-radius: 1px;
   background: color-mix(in srgb, var(--bar) 45%, transparent);
-  pointer-events: none;
-}
-.tl-kf {
-  position: absolute;
-  top: 50%;
-  width: 8px;
-  height: 8px;
-  margin: -4px 0 0 -4px;
-  transform: rotate(45deg);
-  border-radius: 2px;
-  background: color-mix(in srgb, var(--bar) 60%, white);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
   pointer-events: none;
 }
 
@@ -1728,21 +1762,7 @@ html.light-mode .tl-group-name { color: #000000; }
 /* `display: flex` on these would otherwise override the hidden attribute used when a row is deleted */
 .tl-row-label[hidden], .tl-track-row[hidden] { display: none; }
 
-/* per-setting eye (next to the X): grays out just that row's tracks */
-.tl-row-label .tl-eye { margin-left: auto; }
-.tl-row-label .tl-row-del { margin-left: 8px; }
-.tl-row-label.is-muted .tl-eye .eye-on { display: none; }
-.tl-row-label.is-muted .tl-eye .eye-off { display: grid; }
-.tl-row-label.is-muted .tl-eye { opacity: 1; }
-.tl-row-label.is-muted > span { color: var(--text-dim); }
-.tl-track-row.is-muted { --bar: #5B5B5E; }
-
-/* light mode: hidden (grayed out) sections and rows get a light gray instead of the dark one */
-html.light-mode .tl-group.is-muted { --bar: #B4B4B9 !important; }
-html.light-mode .tl-track-row.is-muted { --bar: #B4B4B9; }
-
 /* theme switch: everything in the timing UI fades with the card instead of snapping (the ruler's top line used to flash) */
-.tl-toolbar,
 .tl-ruler-wrap { transition: background-color 150ms ease-out, border-color 150ms ease-out; }
 .tl-tick { transition: background-color 150ms ease-out; }
 .tl-tick-label { transition: color 150ms ease-out; }

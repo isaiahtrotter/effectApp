@@ -27,8 +27,8 @@
     inout: 'M1 9C5 9 5 1 9 1',         // ease in + ease out
   };
   const CURVE_ORDER = ['inout', 'in', 'out']; // linear is the default, so it isn't offered
-  const curveSvg = (name, size = 10) =>
-    `<svg width="${size}" height="${size}" viewBox="0 0 10 10" fill="none"><path d="${CURVES[name]}" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>`;
+  const curveSvg = (name, size = 10, hairline = false) =>
+    `<svg width="${size}" height="${size}" viewBox="0 0 10 10" fill="none"><path d="${CURVES[name]}" stroke="currentColor" stroke-width="${hairline ? 1.5 : 1.1}"${hairline ? ' vector-effect="non-scaling-stroke"' : ''} stroke-linecap="round"/></svg>`;
 
   // Every track animates its setting from one value to another (defaults 0 -> 100). The right-click
   // menu edits both with sliders.
@@ -52,7 +52,7 @@
       { label: 'reflection scale', clips: [{ s: 0, e: 0.5 }] },
       { label: 'pattern type', clips: [{ s: 0.38, e: 0.88 }] },
       { label: 'shift loop (sec)', clips: [{ s: 0.69, e: 2.54 }] },
-    ], eye: true },
+    ] },
     { name: 'Morph grid', bar: '#A53A20', rows: [
       { label: 'stretch amount', clips: [{ s: 0, e: 0.5 }] },
       { label: 'seed pattern', clips: [{ s: 0, e: 1.68, curve: 'out' }] },
@@ -69,8 +69,6 @@
   ];
 
   const CHEVRON = '<svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  const EYE = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1.5 8C3 5.5 5.3 4.3 8 4.3C10.7 4.3 13 5.5 14.5 8C13 10.5 10.7 11.7 8 11.7C5.3 11.7 3 10.5 1.5 8Z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/><circle cx="8" cy="8" r="1.6" fill="currentColor"/></svg>';
-  const EYE_OFF = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1.5 8C3 5.5 5.3 4.3 8 4.3C10.7 4.3 13 5.5 14.5 8C13 10.5 10.7 11.7 8 11.7C5.3 11.7 3 10.5 1.5 8Z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/><circle cx="8" cy="8" r="1.6" fill="currentColor"/><path d="M3 13L13 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>';
   const CLOSE = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2L10 10M10 2L2 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
 
   const scroll = root.querySelector('[data-tl-scroll]');
@@ -235,15 +233,14 @@
   }
 
   // ---------- easing buttons (toolbar) ----------
-  const easeBtns = Array.from(root.querySelectorAll('[data-ease]'));
+  const easeBtn = root.querySelector('[data-tl-ease-btn]');
+  const EASE_INOUT_ICON = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 20C11 20 13 4 21 4" stroke="currentColor" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
+  // the button shows the selected track's easing (ease in + ease out when none is set or they differ)
   function updateEaseButtons() {
-    const current = commonCurve() || null; // no easing set (or a mix) = nothing highlighted
-    easeBtns.forEach((b) => {
-      b.disabled = !selected;
-      b.classList.toggle('is-active', b.dataset.ease === current);
-      b.setAttribute('aria-pressed', String(b.dataset.ease === current));
-    });
+    easeBtn.disabled = !selected;
+    const face = commonCurve() || 'inout';
+    easeBtn.innerHTML = face === 'inout' ? EASE_INOUT_ICON : curveSvg(face, 20, true);
   }
 
   // name = easing to set, or null to remove it from the selected track
@@ -263,17 +260,13 @@
     commit(before);
   }
 
-  // clicking an easing sets it; clicking the one that's already active removes it from the track
-  function setEase(name) {
-    if (!multi.length) return;
-    applyEase(commonCurve() === name ? null : name);
-  }
-
-  easeBtns.forEach((b) => {
-    b.innerHTML = curveSvg(b.dataset.ease, 16);
-    b.addEventListener('pointerdown', (e) => e.preventDefault()); // keep focus (and selection) where it was
-    b.addEventListener('click', () => setEase(b.dataset.ease));
+  easeBtn.addEventListener('pointerdown', (e) => e.preventDefault()); // keep focus (and selection) where it was
+  easeBtn.addEventListener('click', () => {
+    const wasOpen = menu && menu._anchor === easeBtn;
+    closeMenu();
+    if (!wasOpen) openEaseMenu();
   });
+  updateEaseButtons(); // draws the icon before anything is selected
 
   function layoutClip(clip, node) {
     // rows start at the timeline origin (the band's 4px padding)
@@ -547,8 +540,7 @@
   }
 
   // ---------- collapsed-section hints ----------
-  // A collapsed section keeps a keyframe summary: a diamond at the start and end of every
-  // track inside it, joined by a thin line wherever tracks overlap in time.
+  // A collapsed section keeps a thin line wherever tracks inside it overlap in time.
   function renderSummary(group) {
     if (!group.side.classList.contains('is-collapsed')) return;
     group.barStrip.textContent = '';
@@ -564,22 +556,11 @@
       if (last && a <= last[1] + 1e-6) last[1] = Math.max(last[1], b);
       else merged.push([a, b]);
     });
-    const x = (t) => INSET + t * pps; // the bar starts INSET in, like the rows' band
-    // diamonds are ~11px across when rotated, so keep their points inside the bar's 4px side padding
-    const DIAMOND = 6;
-    const xKf = (t) => INSET + clamp(t * pps, DIAMOND, duration * pps - DIAMOND);
     merged.forEach(([a, b]) => {
       const line = el('i', 'tl-kf-line');
-      line.style.left = x(a) + 'px';
+      line.style.left = INSET + a * pps + 'px'; // the bar starts INSET in, like the rows' band
       line.style.width = (b - a) * pps + 'px';
       group.barStrip.appendChild(line);
-    });
-    const times = new Set();
-    spans.forEach(([a, b]) => { times.add(Math.round(a * 1000)); times.add(Math.round(b * 1000)); });
-    times.forEach((ms) => {
-      const kf = el('i', 'tl-kf');
-      kf.style.left = xKf(ms / 1000) + 'px';
-      group.barStrip.appendChild(kf);
     });
   }
   const refreshSummaries = () => groupEntries.forEach(renderSummary);
@@ -594,24 +575,10 @@
     if (g.collapsed) { side.classList.add('is-collapsed'); main.classList.add('is-collapsed'); }
 
     const head = el('div', 'tl-group-head');
-    const name = el('button', 'tl-group-name', `${g.name}${CHEVRON}`);
+    const name = el('button', 'tl-group-name', `${CHEVRON}<span>${g.name}</span>`);
     name.type = 'button';
     head.appendChild(name);
-    const eye = el('button', 'tl-hover-icon tl-eye',
-      `<span class="eye-on">${EYE}</span><span class="eye-off">${EYE_OFF}</span>`);
-    eye.type = 'button';
-    eye.setAttribute('aria-label', `Hide ${g.name}`);
-    eye.setAttribute('aria-pressed', 'false');
-    eye.addEventListener('click', () => {
-      const muted = !side.classList.contains('is-muted');
-      side.classList.toggle('is-muted', muted);
-      main.classList.toggle('is-muted', muted);
-      eye.setAttribute('aria-pressed', String(muted));
-      eye.setAttribute('aria-label', `${muted ? 'Show' : 'Hide'} ${g.name}`);
-    });
-    head.appendChild(eye);
-
-    // X next to the eye deletes the whole section (undoable)
+    // X deletes the whole section (undoable)
     const del = el('button', 'tl-hover-icon tl-group-del', CLOSE);
     del.type = 'button';
     del.setAttribute('aria-label', `Delete ${g.name}`);
@@ -635,26 +602,13 @@
 
     g.rows.forEach((r) => {
       const labEl = el('div', 'tl-row-label', `<span>${r.label}</span>`);
-      const rowEye = el('button', 'tl-hover-icon tl-eye',
-        `<span class="eye-on">${EYE}</span><span class="eye-off">${EYE_OFF}</span>`);
-      rowEye.type = 'button';
-      rowEye.setAttribute('aria-label', `Hide ${r.label}`);
-      rowEye.setAttribute('aria-pressed', 'false');
       const x = el('button', 'tl-hover-icon tl-row-del', CLOSE);
       x.type = 'button';
       x.setAttribute('aria-label', `Remove ${r.label}`);
-      labEl.append(rowEye, x);
+      labEl.appendChild(x);
       sideBody.appendChild(labEl);
 
       const rowEl = el('div', 'tl-track-row');
-      // the eye grays this setting's tracks out (same dark gray as a hidden section)
-      rowEye.addEventListener('click', () => {
-        const muted = !labEl.classList.contains('is-muted');
-        labEl.classList.toggle('is-muted', muted);
-        rowEl.classList.toggle('is-muted', muted);
-        rowEye.setAttribute('aria-pressed', String(muted));
-        rowEye.setAttribute('aria-label', `${muted ? 'Show' : 'Hide'} ${r.label}`);
-      });
       const entry = { row: r, rowEl, labEl, removed: false, group };
       entries.push(entry);
       group.entries.push(entry);
@@ -687,6 +641,7 @@
       renderSummary(group);
       name.blur(); // no stray focus ring when you keep using the keyboard shortcuts
     });
+
     if (g.collapsed) renderSummary(group);
 
     labelsEl.appendChild(side);
@@ -772,11 +727,8 @@
     const m = Math.floor(total / FPS / 60);
     flag.textContent = `${m}:${pad(s)}:${pad(f)}`;
 
-    // the timer pill stays fully inside the timing UI; the line and handle keep moving past its edges
-    const w = flag.offsetWidth;
+    // the timer pill is always centered under the playhead (CSS); at the ends it simply reaches past the ruler
     const rulerRight = playhead.parentElement.clientWidth - EDGE; // the layer also covers the right padding
-    const left = clamp(x - w / 2, INSET, Math.max(INSET, rulerRight - w));
-    flag.style.left = left - x + 'px';
     // only the part of the timeline that's actually in view shows the playhead
     playhead.style.visibility = x >= INSET && x <= rulerRight ? '' : 'hidden';
   }
@@ -855,7 +807,6 @@
     loopBtn.setAttribute('aria-pressed', String(loop));
     loopBtn.blur(); // keep Space for play / pause
   });
-  root.querySelector('[data-tl-rewind]').addEventListener('click', () => { setTime(0); scroll.scrollLeft = 0; });
 
   // ---------- zoom ----------
   let fitMode = true; // until the user zooms, the whole timeline fits the visible width
@@ -866,6 +817,7 @@
     refreshSummaries();
     buildRuler();
     render();
+    updateSideFades();
   }
 
   function fitWidth() {
@@ -886,13 +838,20 @@
     scroll.scrollLeft = t0 * pps;
     rulerWrap.scrollLeft = scroll.scrollLeft;
     render();
+    updateSideFades();
   }
 
   // the colored bands stay put (so their rounded edges always show); only what's inside them scrolls
   const syncScrollVars = () => {
     root.style.setProperty('--tl-sl', scroll.scrollLeft + 'px');
     root.style.setProperty('--tl-view-w', scroll.clientWidth + 'px');
+    updateSideFades();
   };
+  // soft fades on the left / right edges while there is more timeline to scroll to
+  function updateSideFades() {
+    root.classList.toggle('has-more-left', scroll.scrollLeft > 2);
+    root.classList.toggle('has-more-right', scroll.scrollWidth - scroll.scrollLeft - scroll.clientWidth > 2);
+  }
   syncScrollVars();
 
   scroll.addEventListener('scroll', () => {
@@ -980,13 +939,9 @@
 
   // ---------- vertical resize ----------
   const handle = root.querySelector('[data-tl-resize]');
-  const FADE_H = 100;     // above this height the easing row is fully there
-  const MIN_H = 54;       // 42px (bottom of the buttons row) + 12px, the same as the padding above and to the left
-  const HEAD_ONLY_H = 86;  // below this the tracks area is gone too: hide its fades
-  // 0 = normal, 1 = fully collapsed: drives the easing row fading out
+  const MIN_H = 64;       // 52px (bottom of the 40px buttons row) + 12px, the same as the padding above and to the left
+  const HEAD_ONLY_H = 88;  // below this the tracks area is gone too: hide its fades; the head turns into the time pill
   function setCollapse(h) {
-    const p = clamp((FADE_H - h) / (FADE_H - MIN_H), 0, 1);
-    root.style.setProperty('--tl-collapse', p);
     root.classList.toggle('is-head-only', h < HEAD_ONLY_H);
   }
   handle.addEventListener('pointerdown', (e) => {
@@ -1025,6 +980,7 @@
     if (!menu) return;
     menu.remove();
     menu = null;
+    easeBtn.setAttribute('aria-expanded', 'false');
     window.removeEventListener('blur', closeMenu);
     window.removeEventListener('resize', closeMenu);
     document.removeEventListener('pointerdown', onMenuOutside, true);
@@ -1032,7 +988,7 @@
     scroll.removeEventListener('scroll', closeMenu);
     body.removeEventListener('scroll', closeMenu);
   }
-  function onMenuOutside(e) { if (menu && !menu.contains(e.target)) closeMenu(); }
+  function onMenuOutside(e) { if (menu && !menu.contains(e.target) && !e.target.closest('[data-tl-ease-btn]')) closeMenu(); }
   function onMenuKey(e) { if (e.key === 'Escape') { e.stopPropagation(); closeMenu(); } }
 
   // the app's own slider (same markup and styling as the Sliders panel), wired by its setupSlider()
@@ -1112,6 +1068,34 @@
     menu.style.left = Math.max(8, Math.min(x, window.innerWidth - r.width - 8)) + 'px';
     menu.style.top = Math.max(8, Math.min(y, window.innerHeight - r.height - 8)) + 'px';
 
+    window.addEventListener('blur', closeMenu);
+    window.addEventListener('resize', closeMenu);
+    document.addEventListener('pointerdown', onMenuOutside, true);
+    document.addEventListener('keydown', onMenuKey, true);
+    scroll.addEventListener('scroll', closeMenu);
+    body.addEventListener('scroll', closeMenu);
+  }
+
+  // the toolbar's easing button: a small dropdown with the easings other than the one showing
+  function openEaseMenu() {
+    if (!multi.length) return;
+    const current = commonCurve() || null;
+    menu = el('div', 'tl-menu tl-ease-menu');
+    menu._anchor = easeBtn;
+    menu.setAttribute('role', 'menu');
+    EASE_ITEMS.filter(([name]) => name !== current).forEach(([name, label]) => {
+      const b = el('button', 'tl-menu-item',
+        `<span class="tl-menu-icon">${curveSvg(name, 16)}</span><span>${label}</span>`);
+      b.type = 'button';
+      b.setAttribute('role', 'menuitem');
+      b.addEventListener('click', () => { applyEase(name); closeMenu(); });
+      menu.appendChild(b);
+    });
+    document.body.appendChild(menu);
+    const r = easeBtn.getBoundingClientRect();
+    menu.style.left = r.left + 'px';
+    menu.style.top = r.bottom + 4 + 'px';
+    easeBtn.setAttribute('aria-expanded', 'true');
     window.addEventListener('blur', closeMenu);
     window.addEventListener('resize', closeMenu);
     document.addEventListener('pointerdown', onMenuOutside, true);

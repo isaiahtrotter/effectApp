@@ -1196,12 +1196,12 @@ html.light-mode .ratio-field {
   position: relative;
   padding-top: 10px; /* the 20px ruler is centered on the 40px button row */
 }
-/* zoom indicator: one thin line along the bottom of the ruler, as long as the visible share of the timeline */
+/* zoom indicator: one thin line right under the ruler, as long as the visible share of the timeline */
 .tl-zoom {
   position: absolute;
   left: 0;
   right: 0;
-  top: 28px; /* 10px padding + 20px ruler - 2px */
+  top: 30px; /* 10px padding + 20px ruler: directly under the ruler, touching its bottom edge */
   height: 2px;
   pointer-events: none;
   opacity: 0;
@@ -1213,7 +1213,7 @@ html.light-mode .ratio-field {
   top: 0;
   height: 100%;
   border-radius: 1px;
-  background: var(--text-dim);
+  background: color-mix(in srgb, var(--text-dim) 45%, var(--card-bg)); /* solid, a step dimmer than the secondary text */
 }
 
 .tl-controls {

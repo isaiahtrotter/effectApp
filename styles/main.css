@@ -1313,20 +1313,22 @@ html.light-mode .ratio-field {
 /* zoom buttons, bottom right of the timeline */
 .tl-zoom-btns {
   position: absolute;
-  right: 16px;
-  bottom: 16px;
+  right: 12px;
+  bottom: 12px;
   z-index: 8; /* above the fades (6) and the playhead (7) */
   display: flex;
   gap: 4px;
+  /* one shadow for the pair, drawn behind both buttons, so neither button's shadow lands on the other */
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.2));
 }
 .tl-zoom-btns .tl-btn {
   width: 32px;
   height: 32px;
-  background: color-mix(in srgb, #fff 8%, var(--card-bg)); /* fallback */
-  background: oklch(from var(--card-bg) calc(l + 0.1) c h); /* the card's own hue and chroma, just lighter */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  background: color-mix(in srgb, var(--text-color) 7%, var(--card-bg)); /* the duration field's gray, solid */
 }
-.tl-zoom-btns .tl-btn:hover { background: color-mix(in srgb, #fff 12%, var(--card-bg)); background: oklch(from var(--card-bg) calc(l + 0.14) c h); }
+.tl-zoom-btns .tl-btn:hover { background: color-mix(in srgb, var(--text-color) 11%, var(--card-bg)); } /* the duration field's hover gray */
+html.light-mode .tl-zoom-btns .tl-btn { background: #fff; }
+html.light-mode .tl-zoom-btns .tl-btn:hover { background: color-mix(in srgb, var(--text-color) 6%, #fff); }
 .timeline.is-head-only .tl-zoom-btns { display: none; }
 .tl-flag:active { cursor: grabbing; }
 .timeline.is-panning, .timeline.is-panning * { cursor: grabbing !important; user-select: none; }

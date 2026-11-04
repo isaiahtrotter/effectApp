@@ -854,6 +854,16 @@
       scroll.scrollLeft += e.deltaY || e.deltaX;
     }
   };
+  // the +/- buttons zoom around the middle of what's in view
+  const zoomBy = (factor) => {
+    const mid = scroll.clientWidth / 2;
+    const tAt = (scroll.scrollLeft + mid - INSET) / pps;
+    const next = pps * factor;
+    setZoom(next, tAt - (mid - INSET) / next);
+  };
+  root.querySelectorAll('.tl-zoom-btns .tl-btn').forEach((b) => b.addEventListener('pointerdown', (e) => e.preventDefault()));
+  root.querySelector('[data-tl-zoom-in]').addEventListener('click', () => zoomBy(1.5));
+  root.querySelector('[data-tl-zoom-out]').addEventListener('click', () => zoomBy(1 / 1.5));
   scroll.addEventListener('wheel', onWheel, { passive: false });
   rulerWrap.addEventListener('wheel', onWheel, { passive: false });
 
@@ -1130,7 +1140,7 @@
   // clicking anywhere that isn't a track deselects (tracks stop their own pointerdown from reaching here)
   document.addEventListener('pointerdown', (e) => {
     if (e.shiftKey || e.metaKey || e.ctrlKey) return; // those add to the selection
-    if (selected && !e.target.closest('.tl-clip, .tl-ease, .tl-menu')) select(null); // the easing buttons act on the selection
+    if (selected && !e.target.closest('.tl-clip, .tl-ease, .tl-menu, .tl-zoom-btns')) select(null); // the easing buttons act on the selection
   });
 
   // ---------- keyboard ----------

@@ -794,6 +794,7 @@
     allNodes().forEach((node) => layoutClip(node._clip, node));
     buildRuler();
     render();
+    updateZoomLine();
   }
 
   function fitWidth() {
@@ -820,7 +821,16 @@
   const syncScrollVars = () => {
     root.style.setProperty('--tl-sl', scroll.scrollLeft + 'px');
     root.style.setProperty('--tl-view-w', scroll.clientWidth + 'px');
+    updateZoomLine();
   };
+  // the zoom line: its length is the share of the timeline in view, its position where you are in it
+  const zoomLine = root.querySelector('[data-tl-zoom]');
+  function updateZoomLine() {
+    const total = scroll.scrollWidth || 1;
+    zoomLine.style.width = Math.min(100, (scroll.clientWidth / total) * 100) + '%';
+    zoomLine.style.left = (scroll.scrollLeft / total) * 100 + '%';
+    zoomLine.parentElement.classList.toggle('is-visible', total - scroll.clientWidth > 1.5); // only once zoomed in
+  }
   syncScrollVars();
 
   scroll.addEventListener('scroll', () => {
@@ -829,20 +839,49 @@
     render();
   });
 
-  // the wheel (or a trackpad pinch / ctrl or cmd + wheel) zooms around the pointer, over the tracks and the ruler;
-  // sideways trackpad swipes still scroll
-  const onWheelZoom = (e) => {
-    const pinch = e.ctrlKey || e.metaKey;
-    if (!pinch && Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
-    e.preventDefault();
-    const rect = scroll.getBoundingClientRect();
-    const tAt = (scroll.scrollLeft + e.clientX - rect.left - INSET) / pps;
-    const dy = pinch ? e.deltaY : clamp(e.deltaY, -40, 40); // one mouse-wheel notch is a modest step
-    const next = pps * Math.exp(-dy * 0.01);
-    setZoom(next, tAt - (e.clientX - rect.left - INSET) / next);
+  // Alt + wheel zooms around the pointer, Ctrl + wheel pans sideways (over the tracks and the ruler);
+  // a plain wheel keeps scrolling the tracks up and down
+  const onWheel = (e) => {
+    if (e.altKey) {
+      e.preventDefault();
+      const rect = scroll.getBoundingClientRect();
+      const tAt = (scroll.scrollLeft + e.clientX - rect.left - INSET) / pps;
+      const dy = clamp(e.deltaY || e.deltaX, -40, 40); // one mouse-wheel notch is a modest step
+      const next = pps * Math.exp(-dy * 0.01);
+      setZoom(next, tAt - (e.clientX - rect.left - INSET) / next);
+    } else if (e.ctrlKey) {
+      e.preventDefault();
+      scroll.scrollLeft += e.deltaY || e.deltaX;
+    }
   };
-  scroll.addEventListener('wheel', onWheelZoom, { passive: false });
-  rulerWrap.addEventListener('wheel', onWheelZoom, { passive: false });
+  scroll.addEventListener('wheel', onWheel, { passive: false });
+  rulerWrap.addEventListener('wheel', onWheel, { passive: false });
+
+  // holding the middle mouse button and dragging pans the timeline (sideways, and up / down through the tracks)
+  root.addEventListener('mousedown', (e) => { if (e.button === 1 && e.target.closest('.tl-scroll, .tl-main-head')) e.preventDefault(); }); // no autoscroll cursor
+  root.addEventListener('pointerdown', (e) => {
+    if (e.button !== 1 || !e.target.closest('.tl-scroll, .tl-main-head')) return;
+    e.preventDefault();
+    e.stopPropagation(); // tracks and the ruler must not treat it as a click
+    const x0 = e.clientX, y0 = e.clientY, sl0 = scroll.scrollLeft, st0 = body.scrollTop;
+    root.classList.add('is-panning');
+    const move = (ev) => {
+      if (!(ev.buttons & 4)) { end(); return; } // released out of sight
+      scroll.scrollLeft = sl0 - (ev.clientX - x0);
+      body.scrollTop = st0 - (ev.clientY - y0);
+    };
+    const end = () => {
+      root.classList.remove('is-panning');
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', end);
+      window.removeEventListener('pointercancel', end);
+      window.removeEventListener('blur', end);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', end);
+    window.addEventListener('pointercancel', end);
+    window.addEventListener('blur', end);
+  }, true);
 
   new ResizeObserver(() => { syncScrollVars(); if (fitMode) fitWidth(); }).observe(scroll);
 

@@ -1193,7 +1193,27 @@ html.light-mode .ratio-field {
   flex-direction: column;
   justify-content: flex-start;
   cursor: col-resize;
+  position: relative;
   padding-top: 10px; /* the 20px ruler is centered on the 40px button row */
+}
+/* zoom indicator: one thin line along the bottom of the ruler, as long as the visible share of the timeline */
+.tl-zoom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 28px; /* 10px padding + 20px ruler - 2px */
+  height: 2px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+}
+.tl-zoom.is-visible { opacity: 1; }
+.tl-zoom i {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 1px;
+  background: var(--text-dim);
 }
 
 .tl-controls {
@@ -1291,6 +1311,7 @@ html.light-mode .ratio-field {
   pointer-events: none;
 }
 .tl-flag:active { cursor: grabbing; }
+.timeline.is-panning, .timeline.is-panning * { cursor: grabbing !important; user-select: none; }
 .tl-tick-label.is-last { margin-left: -5px; transform: translateX(-100%); }
 
 .tl-body {
